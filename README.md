@@ -1,49 +1,40 @@
-# RepositorioTemplate
-Esse repositório é para ser utilizado pelos grupos como um template inicial, da home page do Projeto.
-**!! Atenção: Renomeie o seu repositório para (Ano.Semestre)_(Grupo)_(Paradigma)_(NomeDoProjeto). !!** 
+# "Share Or Take?"
 
-Paradigmas:
- - Funcional
- - Logico
- - Concorrente
- - SMA
-
-**!! *Não coloque os nomes dos alunos no título do repositório*. Exemplo de título correto: 2020.1_G1_Logico_ProjetoRoteirosAereos!!**
- 
- (Apague essa seção)
-
-# NomeDoProjeto
-
-**Disciplina**: FGA0210 - PARADIGMAS DE PROGRAMAÇÃO - T01 <br>
-**Nro do Grupo**: XX<br>
-**Paradigma**: XXXXXXXXXX<br>
+**Disciplina**: FGA0210 - PARADIGMAS DE PROGRAMAÇÃO - T01  
+**Nro do Grupo**: 05  
+**Paradigma**: SMA
 
 ## Alunos
+
 |Matrícula | Aluno |
 | -- | -- |
-| xx/xxxxxx  |  xxxx xxxx xxxxx |
-| xx/xxxxxx  |  xxxx xxxx xxxxx |
+| 16/0049458 | Eduardo Lima Ribeiro |
+| 17/0070735  |  Lucas Maciel Aguiar |
 
-## Sobre 
-Descreva o seu projeto em linhas gerais. 
+## Sobre
+
+Esse projeto consiste em uma simulação simples para demonstrar a aplicabilidade de Sistemas MultiAgentes a partir de uma simulação de sobrevivência de uma comunidade com espécies distintas compartilhando o mesmo recursos, porém cada espécie possui sua própria estratégia de sobrevivência.  
 
 ## Screenshots
+
 Adicione 2 ou mais screenshots do projeto em termos de interface e/ou funcionamento.
 
-## Instalação 
-**Linguagens**: xxxxxx<br>
-**Tecnologias**: xxxxxx<br>
+## Instalação
+
+**Linguagens**: Java  
+**Tecnologias**: JADE, JFrame  
+
 Descreva os pré-requisitos para rodar o seu projeto e os comandos necessários.
 Insira um manual ou um script para auxiliar ainda mais.
 
-## Uso 
+## Uso
+
 Explique como usar seu projeto, caso haja algum passo a passo após o comando de execução.
 
 ## Vídeo
+
 Adicione 1 ou mais vídeos com a execução do projeto.
 
-## Outros 
-Quaisquer outras informações sobre seu projeto podem ser descritas a seguir.
-
 ## Fontes
-Caso utilize materiais de terceiros, referencie-os adequadamente.
+
+__Simulação de compartilhamento de recursos em uma comunidade heterogênea:__ <https://www.youtube.com/watch?v=YNMkADpvO4w&t=685s&ab_channel=Primer>
