@@ -2,7 +2,9 @@ package graphics;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.JFrame;
 
@@ -26,30 +28,6 @@ public class MainWindow extends JFrame {
 	private EnvironmentAgent environment;
 	private EnvironmentBoard envBoard;
 	
-	public static void main(String[] args) {
-		MainWindow window = new MainWindow(new EnvironmentAgent(), 400, 400, 10, 10);
-		
-		// Recurso de comida
-		Food foodResources[] =  new Food[1];
-		
-		foodResources[0] = new Food("comida", 2);
-		foodResources[0].setPos(1, 1);
-		
-		BoardItemGroup foodGroup = new BoardItemGroup(foodResources, "/food.png");
-		
-		// Criaturas
-		Creature creatures[] = new Creature[1];
-		
-		creatures[0] = new Creature();
-		creatures[0].setPos(3, 3);
-		
-		BoardItemGroup creaturesGroup = new BoardItemGroup(creatures, "/specy_3.png");
-		
-		window.setVisible(true);
-		window.insertElementsGroup(foodGroup);
-		window.insertElementsGroup(creaturesGroup);
-	}
-
 	public MainWindow(EnvironmentAgent environment, int width, int height, int rows, int columns) {
 		try {
 			this.buildWindow(width, height);

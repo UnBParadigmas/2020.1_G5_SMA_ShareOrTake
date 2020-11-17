@@ -7,30 +7,13 @@ import generic.board.item.BoardItem;
  */
 public class Food extends BoardItem {
 	
-	private static final int MAX_POS = 100;
-	private static final int MIN_POS = 0;
-	
-	private String name;
 	private Integer foodAmount;
 	
 	// Construtor parametrizado
-	public Food(String name, Integer amount) {
-		this.name = name;
+	public Food(Integer amount) {
 		this.foodAmount = amount;
-		this.randomPos();
 	}
 	
-	// Retorna o nome atual do recurso.
-	public String getName() {
-		// Retorna o nome atual do recurso.
-		return name;
-	}
-	
-	// Muda o nome do recurso para o argumento.
-	public void setName(String name) {
-		this.name = name;
-	}
-
 	// Retorna quantia atual de comida.
 	public Integer getFoodAmount() {
 		return foodAmount;
@@ -46,10 +29,17 @@ public class Food extends BoardItem {
 		this.foodAmount += foodAmount;
 	}
 	
-	// Muda a posição do recurso para um valor aleatório dentro dos limites.
-	public void randomPos() {
-		// Valores máximos e minimos para posições X e Y de um recurso.
-		this.setXPos((int) Math.random() * (MAX_POS - MIN_POS) + MIN_POS);
-		this.setYPos((int) Math.random() * (MAX_POS - MIN_POS) + MIN_POS);
+	// Gera a posicao aleatoria da comida
+	// A comida nao deve iniciar nas bordas do board 
+	@Override
+	public void randomPos(int minPos, int maxPos) {
+		while (true) {			
+			this.setXPos((int) (Math.random() * ((maxPos + 1) - minPos) + minPos));
+			this.setYPos((int) (Math.random() * ((maxPos + 1) - minPos) + minPos));
+			
+			if (!(isInBorder(this.getXPos(), minPos, maxPos) || isInBorder(this.getYPos(), minPos, maxPos))) {
+				return;
+			}
+		}
 	}
 }

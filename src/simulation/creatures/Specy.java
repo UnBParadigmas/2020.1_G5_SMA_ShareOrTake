@@ -30,13 +30,17 @@ public class Specy{
 		this.name = name;
 	}
 	
+	public List<Creature> getCreatures() {
+		return this.creatures;
+	}
+	
     // Retorna quantidade de criaturas da espécie.
 	public int getCreatureCount() {
 		return this.creatures.size();
 	}
 	
     // Adiciona uma criatura a especie
-    public void addCreatureCount(Creature creature) {
+    public void addCreature(Creature creature) {
     	this.creatures.add(creature);
     }
 	

@@ -64,9 +64,9 @@ public class EnvironmentBoard extends Canvas {
 	}
 
 	private void drawElements(Graphics g, BoardItemGroup elementsGroup) {
-		for (int j = 0; j < elementsGroup.getBoardItems().length; j++) {
-			this.drawElement(g, elementsGroup, elementsGroup.getBoardItems()[j].getXPos(),
-					elementsGroup.getBoardItems()[j].getYPos());
+		for (int j = 0; j < elementsGroup.getBoardItems().size(); j++) {
+			this.drawElement(g, elementsGroup, elementsGroup.getBoardItems().get(j).getXPos(),
+					elementsGroup.getBoardItems().get(j).getYPos());
 		}
 	}
 

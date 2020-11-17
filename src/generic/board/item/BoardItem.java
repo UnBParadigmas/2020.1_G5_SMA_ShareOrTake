@@ -24,4 +24,11 @@ public abstract class BoardItem {
 		this.xPos = xPos;
 		this.yPos = yPos;
 	}
+	
+	// Regra de posicao aleatoria
+	public abstract void randomPos(int minPos, int maxPos);
+	
+	protected boolean isInBorder(int pos, int minPos, int maxPos) {
+		return pos == minPos || pos == maxPos;
+	}
 }
