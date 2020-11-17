@@ -10,8 +10,8 @@ public class Resource {
 	
 	private String name;
 	private Integer foodAmount;
-	private Integer Xpos;
-	private Integer Ypos;
+	private Integer xPos;
+	private Integer yPos;
 	
 	public String getName() {
 		return name;
@@ -30,11 +30,19 @@ public class Resource {
 	}
 	
 	public void setPos(Integer Xpos, Integer Ypos) {
-		this.Xpos = Xpos;
-		this.Ypos = Ypos;
+		this.xPos = Xpos;
+		this.yPos = Ypos;
 	}
 	
 	public List<Integer> getPos() {
-		return Arrays.asList(this.Xpos, this.Ypos);
+		return Arrays.asList(this.xPos, this.yPos);
+	}
+	
+	public int getXPos() {
+		return this.xPos;
+	}
+	
+	public int getYPos() {
+		return this.yPos;
 	}
 }
