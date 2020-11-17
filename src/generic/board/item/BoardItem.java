@@ -22,6 +22,6 @@ public abstract class BoardItem {
 	
 	public void setPos(Integer xPos, Integer yPos) {
 		this.xPos = xPos;
-		this.setYPos(yPos);
+		this.yPos = yPos;
 	}
 }

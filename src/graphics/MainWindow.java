@@ -8,6 +8,7 @@ import javax.swing.JFrame;
 
 import generic.board.item.BoardItem;
 import generic.board.item.BoardItemGroup;
+import simulation.creatures.Creature;
 import simulation.environment.EnvironmentAgent;
 import simulation.resources.Food;
 
@@ -31,14 +32,22 @@ public class MainWindow extends JFrame {
 		// Recurso de comida
 		Food foodResources[] =  new Food[1];
 		
-		foodResources[0] = new Food();
-		foodResources[0] = new Food();
+		foodResources[0] = new Food("comida", 2);
 		foodResources[0].setPos(1, 1);
 		
-		BoardItemGroup itemGroup = new BoardItemGroup(foodResources, "/food.png");
+		BoardItemGroup foodGroup = new BoardItemGroup(foodResources, "/food.png");
+		
+		// Criaturas
+		Creature creatures[] = new Creature[1];
+		
+		creatures[0] = new Creature();
+		creatures[0].setPos(3, 3);
+		
+		BoardItemGroup creaturesGroup = new BoardItemGroup(creatures, "/specy_3.png");
 		
 		window.setVisible(true);
-		window.insertElementsGroup(itemGroup);
+		window.insertElementsGroup(foodGroup);
+		window.insertElementsGroup(creaturesGroup);
 	}
 
 	public MainWindow(EnvironmentAgent environment, int width, int height, int rows, int columns) {

@@ -22,6 +22,10 @@ public class BoardItemGroup {
 		return boardItems;
 	}
 	
+	public void setBoardItems(BoardItem boardItems[]) {
+		this.boardItems = boardItems;
+	}
+	
 	private void setImage(String path) {
 		try {
 			this.groupImage = ImageIO.read(getClass().getResource(path));
