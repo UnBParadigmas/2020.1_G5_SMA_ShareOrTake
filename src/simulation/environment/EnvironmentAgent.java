@@ -2,7 +2,7 @@ package simulation.environment;
 
 import javax.swing.JFrame;
 
-import ghaphics.MainWindow;
+import graphics.MainWindow;
 import jade.core.Agent;
 import jade.domain.DFService;
 import jade.domain.FIPAException;

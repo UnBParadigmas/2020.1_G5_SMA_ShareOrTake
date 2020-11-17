@@ -1,13 +1,15 @@
-package ghaphics;
+package graphics;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.swing.JFrame;
 
+import generic.board.item.BoardItem;
+import generic.board.item.BoardItemGroup;
 import simulation.environment.EnvironmentAgent;
-import simulation.resources.Resource;
+import simulation.resources.Food;
 
 /**
  * Janela principal do programa
@@ -25,13 +27,18 @@ public class MainWindow extends JFrame {
 	
 	public static void main(String[] args) {
 		MainWindow window = new MainWindow(new EnvironmentAgent(), 400, 400, 10, 10);
-		Resource resourcesTest[] = new Resource[1];
 		
-		resourcesTest[0] = new Resource();
-		resourcesTest[0].setPos(1, 1);
+		// Recurso de comida
+		Food foodResources[] =  new Food[1];
+		
+		foodResources[0] = new Food();
+		foodResources[0] = new Food();
+		foodResources[0].setPos(1, 1);
+		
+		BoardItemGroup itemGroup = new BoardItemGroup(foodResources, "/food.png");
 		
 		window.setVisible(true);
-		window.insertElements(resourcesTest);
+		window.insertElementsGroup(itemGroup);
 	}
 
 	public MainWindow(EnvironmentAgent environment, int width, int height, int rows, int columns) {
@@ -51,8 +58,8 @@ public class MainWindow extends JFrame {
 		this.columns = columns;
 	}
 	
-	public void insertElements(Resource resources[]) {
-		this.envBoard.insertElements(resources);
+	public void insertElementsGroup(BoardItemGroup elementGroup) {
+		this.envBoard.insertElementsGroup(elementGroup);
 	}
 	
 	private void buildWindow(int width, int height) {
