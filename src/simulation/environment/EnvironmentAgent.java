@@ -26,7 +26,7 @@ public class EnvironmentAgent extends Agent {
 	private static final int BOARD_SIZE = 10;
 
 	private MainWindow mainWindow = null;
-	
+
 	private List<Specy> species = new ArrayList<>();
 	private List<Food> foodResources = new ArrayList<>();
 
@@ -51,15 +51,15 @@ public class EnvironmentAgent extends Agent {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private Behaviour behaviourTest() {
 		return new Behaviour() {
-			
+
 			@Override
 			public boolean done() {
 				return false;
 			}
-			
+
 			@Override
 			public void action() {
 			}
@@ -67,22 +67,79 @@ public class EnvironmentAgent extends Agent {
 	}
 
 	private void setUpUI() {
-		mainWindow = new MainWindow(new EnvironmentAgent(), 400, 400, BOARD_SIZE, BOARD_SIZE);
+		mainWindow = new MainWindow(new EnvironmentAgent(), 800, 800, BOARD_SIZE, BOARD_SIZE);
 		mainWindow.setVisible(true);
-		
+
 		// Especies Adicionadas
 		species.add(new Specy("Dove", behaviourTest()));
+		species.add(new Specy("Evo", behaviourTest()));
 
-		for (int i = 0; i < 10; i++) {
-			species.get(0).addCreature(new Creature());
-			foodResources.add(new Food(2));
-		}
-		
 		// Teste de colisao dos items no board
-		BoardItemGroup foodGroup = new BoardItemGroup(foodResources, "/food.png", 0, BOARD_SIZE - 1);
-		BoardItemGroup creaturesGroup = new BoardItemGroup(species.get(0).getCreatures(), "/specy_4.png", 0, BOARD_SIZE - 1);
+		createCreatures(species.get(0), 5, "/specy_1.png");
+		createCreatures(species.get(1), 2, "/specy_4.png");
 		
+		createFoodResources(5, "/food.png");
+	}
+
+	private void createFoodResources(int amount, String pathImage) {
+		for (int i = 0; i < amount; i++) {
+			this.foodResources.add(this.getFood(new Food(2), 0, BOARD_SIZE - 1));
+		}
+
+		BoardItemGroup foodGroup = new BoardItemGroup(this.foodResources, pathImage, 0, BOARD_SIZE - 1);
 		mainWindow.insertElementsGroup(foodGroup);
+	}
+
+	private Food getFood(Food food, int minPos, int maxPos) {
+		setFoodRandomPos(food, minPos, maxPos);
+		return food;
+	}
+	
+	private void setFoodRandomPos(Food food, int minPos, int maxPos) {
+		boolean repeated;
+		do {
+			repeated = false;
+			food.randomPos(minPos, maxPos);
+			for (Food otherFood : this.foodResources) {
+				if (otherFood.getXPos() == food.getXPos() && otherFood.getYPos() == food.getYPos()) {
+					repeated = true;
+					break;
+				}
+			}
+		} while(repeated);
+	}
+
+	private void createCreatures(Specy specy, int amount, String pathImage) {
+		for (int i = 0; i < amount; i++) {
+			specy.addCreature(getCreature(new Creature(), 0, BOARD_SIZE - 1));
+		}
+
+		BoardItemGroup creaturesGroup = new BoardItemGroup(specy.getCreatures(), pathImage, 0, BOARD_SIZE - 1);
 		mainWindow.insertElementsGroup(creaturesGroup);
+	}
+
+	private Creature getCreature(Creature creature, int minPos, int maxPos) {
+		setCreatureRandomPos(creature, minPos, maxPos);
+		return creature;
+	}
+
+	// Escolhe uma posicao aleatoria dentro dos limites e sem conflito com as outras
+	// criaturas
+	private void setCreatureRandomPos(BoardItem item, int minPos, int maxPos) {
+		boolean repeated;
+		do {
+			repeated = false;
+			item.randomPos(minPos, maxPos);
+			for (Specy specyGroup : species) {
+				for (BoardItem otherCreature : specyGroup.getCreatures()) {
+					if (otherCreature.getXPos() == item.getXPos() && otherCreature.getYPos() == item.getYPos()) {
+						repeated = true;
+						break;
+					}
+				}
+				if (repeated)
+					break;
+			}
+		} while (repeated);
 	}
 }
