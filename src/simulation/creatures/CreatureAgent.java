@@ -1,6 +1,9 @@
 package simulation.creatures;
 
 import jade.core.Agent;
+
+import java.io.IOException;
+
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 
@@ -18,6 +21,8 @@ import simulation.environment.*;
  * Agente que representa uma creatura generica
  */
 public class CreatureAgent extends Agent {
+	// Constantes
+    public final static String SHARE = "SHARE";
 	private static final long serialVersionUID = 5935364544929084407L;
 	
 	private ShareStrategyBehaviour shareStrategy;
@@ -42,15 +47,18 @@ public class CreatureAgent extends Agent {
 			ACLMessage hello = new ACLMessage(ACLMessage.INFORM);
 			hello.setContent(EnvironmentAgent.HELLO);
 			hello.addReceiver(new AID("host", AID.ISLOCALNAME));
+			send(hello);
 			
 			// Adicionar behaviour para mover quando chamado
 			addBehaviour(new CyclicBehaviour(this){
 				private static final long serialVersionUID = 1L;
 
 				public void action() {
-					ACLMessage msg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+					ACLMessage msg = receive();
 					
 					if (msg != null) {
+						CreatureAgent a = (CreatureAgent) myAgent;
+						
 						switch (msg.getContent()) {
 							case EnvironmentAgent.MOVE:
 								// Move here
@@ -59,13 +67,30 @@ public class CreatureAgent extends Agent {
 								// Go back here
 								break;
 							case EnvironmentAgent.SHARE:
-								// Share here
+								ACLMessage share = new ACLMessage(ACLMessage.PROPOSE);
+								share.setSender(a.getAID());
+							     try {
+							         Object[] oMsg =new Object[3];
+							         oMsg[0] = a.alive;
+							         oMsg[1] = a.xPos;
+							         oMsg[2] = a.yPos;
+							         
+							         share.setContentObject(oMsg);
+							     } catch (IOException ex) {
+							         System.err.println("Não consegui reconhecer mensagem. Mandando mensagem vazia.");
+							         ex.printStackTrace(System.err);
+							     }
+							    share.addReceiver(msg.getSender());
+								send(share);
 								break;
-							case EnvironmentAgent.SLEEP:
-								// Sleep here
-								break;
-							case EnvironmentAgent.DIE:
-								// Die here
+							case EnvironmentAgent.DEAD:
+								kill();
+								ACLMessage dead = new ACLMessage(ACLMessage.INFORM);
+								dead.setContent(EnvironmentAgent.DEAD);
+								dead.setSender(a.getAID());
+								dead.addReceiver(msg.getSender());
+								send(dead);
+								takeDown();
 								break;
 							default:
 								System.out.println("Mensagem inesperada.");
@@ -112,5 +137,9 @@ public class CreatureAgent extends Agent {
 	
 	public void setShareStrategy(ShareStrategyBehaviour shareStrategy) {
 		this.shareStrategy = shareStrategy;
+	}
+	
+	public void kill() {
+		this.alive = false;
 	}
 }

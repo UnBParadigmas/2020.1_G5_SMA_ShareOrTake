@@ -26,9 +26,8 @@ public class EnvironmentAgent extends Agent {
 	private static final int BOARD_SIZE = 10;
     public final static String HELLO = "HELLO";
     public final static String SHARE = "SHARE";
-    public final static String SLEEP = "SLEEP";
     public final static String GOBACK = "GOBACK";
-    public final static String DIE = "DIE";
+    public final static String DEAD = "DEAD";
     public final static String MOVE = "MOVE";
 
 
