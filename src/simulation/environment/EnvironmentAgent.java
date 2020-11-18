@@ -23,7 +23,7 @@ import simulation.resources.Food;
 public class EnvironmentAgent extends Agent {
 	private static final long serialVersionUID = -6481631683157763680L;
 
-	private static final int BOARD_SIZE = 10;
+	private static final int BOARD_SIZE = 20;
 
 	private MainWindow mainWindow = null;
 
@@ -53,7 +53,7 @@ public class EnvironmentAgent extends Agent {
 	}
 
 	private void setUpUI() {
-		mainWindow = new MainWindow(new EnvironmentAgent(), 800, 800, BOARD_SIZE, BOARD_SIZE);
+		mainWindow = new MainWindow(new EnvironmentAgent(), 1024, 768, BOARD_SIZE, BOARD_SIZE);
 		mainWindow.setVisible(true);
 		
 		setUpFood();
@@ -64,7 +64,7 @@ public class EnvironmentAgent extends Agent {
 		BoardItemGroup foodGroup;
 
 		Food.createFoodResources(this.foodResources, 5, 0, BOARD_SIZE - 1);
-		foodGroup = new BoardItemGroup(this.foodResources, "/food.png", 0, BOARD_SIZE - 1);
+		foodGroup = new BoardItemGroup(this.foodResources, "/food.png");
 
 		mainWindow.insertElementsGroup(foodGroup);
 	}
@@ -81,7 +81,7 @@ public class EnvironmentAgent extends Agent {
 
 		for (int i = 0; i < this.speciesState.size(); i++) {
 			creaturesGroup = new BoardItemGroup(this.speciesState.get(i).getCreaturesState(),
-					this.speciesState.get(i).getImagePath(), 0, BOARD_SIZE - 1);
+					this.speciesState.get(i).getImagePath());
 			mainWindow.insertElementsGroup(creaturesGroup);
 		}
 	}

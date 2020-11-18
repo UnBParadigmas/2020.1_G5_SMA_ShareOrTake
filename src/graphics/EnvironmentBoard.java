@@ -23,17 +23,13 @@ public class EnvironmentBoard extends Canvas {
 
 	private List<BoardItemGroup> elementsGroups = new ArrayList<>();
 
-	public EnvironmentBoard(int width, int height, int rows, int columns) {
-		this.boardSize = Math.min(width, height);
+	public EnvironmentBoard(int rows, int columns) {
 		this.rows = rows;
 		this.columns = columns;
-
-		this.setSize(this.boardSize, this.boardSize);
 	}
 
 	@Override
 	public void paint(Graphics g) {
-		this.updateSizes();
 		this.drawGrid(g);
 		this.drawElementsGroups(g);
 	}
@@ -41,9 +37,11 @@ public class EnvironmentBoard extends Canvas {
 	public void insertElementsGroup(BoardItemGroup elementGroup) {
 		this.elementsGroups.add(elementGroup);
 	}
-
-	private void updateSizes() {
-		this.boardSize = Math.min(getSize().width, getSize().height);
+	
+	@Override
+	public void setBounds(int x, int y, int width, int height) {
+		super.setBounds(x, y, width, height);
+		this.boardSize = width;
 		this.elementSize = this.boardSize / (this.rows);
 	}
 

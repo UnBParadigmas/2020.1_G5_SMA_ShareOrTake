@@ -10,13 +10,9 @@ import javax.imageio.ImageIO;
 public class BoardItemGroup {
 	private Image groupImage;
 	private List<BoardItem> boardItems = new ArrayList<>();
-	private int minPos = 0;
-	private int maxPos = 0;
 	
-	public BoardItemGroup(List<? extends BoardItem> boardItems, String imagePath, int minPos, int maxPos) {
+	public BoardItemGroup(List<? extends BoardItem> boardItems, String imagePath) {
 		this.setImage(imagePath);
-		this.minPos = minPos;
-		this.maxPos = maxPos;
 		
 		this.boardItems = new ArrayList<BoardItem>(boardItems);
 	}
