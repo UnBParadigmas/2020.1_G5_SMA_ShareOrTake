@@ -10,7 +10,7 @@ import javax.swing.JFrame;
 
 import generic.board.item.BoardItem;
 import generic.board.item.BoardItemGroup;
-import simulation.creatures.Creature;
+import simulation.creatures.CreatureState;
 import simulation.environment.EnvironmentAgent;
 import simulation.resources.Food;
 

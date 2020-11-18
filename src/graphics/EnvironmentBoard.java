@@ -24,7 +24,7 @@ public class EnvironmentBoard extends Canvas {
 	private List<BoardItemGroup> elementsGroups = new ArrayList<>();
 
 	public EnvironmentBoard(int width, int height, int rows, int columns) {
-		this.boardSize = height;
+		this.boardSize = Math.min(width, height);
 		this.rows = rows;
 		this.columns = columns;
 
@@ -43,7 +43,7 @@ public class EnvironmentBoard extends Canvas {
 	}
 
 	private void updateSizes() {
-		this.boardSize = getSize().height;
+		this.boardSize = Math.min(getSize().width, getSize().height);
 		this.elementSize = this.boardSize / (this.rows);
 	}
 

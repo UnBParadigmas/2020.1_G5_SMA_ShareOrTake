@@ -1,7 +1,6 @@
 package simulation.creatures;
 
 import jade.core.Agent;
-import jade.core.behaviours.*;
 import simulation.behaviours.*;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
@@ -12,25 +11,33 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
  */
 public class CreatureAgent extends Agent {
 	private static final long serialVersionUID = 5935364544929084407L;
-	private Creature creature;
+	
 	private ShareStrategyBehaviour shareStrategy;
+
+	private int xPos;
+	private int yPos;
+	private boolean alive;
 	
 	@Override
 	protected void setup() {
+		this.xPos = (int) this.getArguments()[0];
+		this.yPos = (int) this.getArguments()[1];
+		this.alive = true;
+		
+		System.out.println("Criando criatura " + getLocalName());
+		
+		System.out.println("POS X: " + this.xPos + ", POS Y: " + this.yPos);
+
 		this.registerInDFD();
 		
-		creature = new Creature();
-		shareStrategy = new ShareStrategyBehaviour();
-				
 		// Add the behaviour to move each loop
 		addBehaviour(new MovementBehaviour());
 		
 		// Add the share strategy behaviour
-		addBehaviour(shareStrategy);
+		addBehaviour(new ShareStrategyBehaviour());
 		
 		// Add the behaviour to sleep each loop
 		addBehaviour(new SleepBehaviour());
-		
 	}
 	
 	@Override
@@ -50,10 +57,6 @@ public class CreatureAgent extends Agent {
 		} catch (FIPAException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	public Creature getCreature() {
-		return this.creature;
 	}
 	
 	public void setShareStrategy(ShareStrategyBehaviour shareStrategy) {
