@@ -1,7 +1,6 @@
 package simulation.creatures;
 
 import generic.board.item.BoardItem;
-import jade.core.behaviours.Behaviour;
 
 /*
  * Caracteristicas da criatura
