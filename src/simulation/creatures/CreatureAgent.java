@@ -22,14 +22,14 @@ import simulation.environment.*;
  */
 public class CreatureAgent extends Agent {
 	// Constantes
-    public final static String SHARE = "SHARE";
+    public final static String FRIENDLY = "FRIENDLY";
+    public final static String AGGRESSIVE = "AGGRESIVE";
 	private static final long serialVersionUID = 5935364544929084407L;
 	
-	private ShareStrategyBehaviour shareStrategy;
-
 	private int xPos;
 	private int yPos;
 	private boolean alive;
+	private String shareStrategy;
 	
 	@Override
 	protected void setup() {
@@ -54,7 +54,7 @@ public class CreatureAgent extends Agent {
 				private static final long serialVersionUID = 1L;
 
 				public void action() {
-					ACLMessage msg = receive();
+					ACLMessage msg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 					
 					if (msg != null) {
 						CreatureAgent a = (CreatureAgent) myAgent;
@@ -67,13 +67,14 @@ public class CreatureAgent extends Agent {
 								// Go back here
 								break;
 							case EnvironmentAgent.SHARE:
-								ACLMessage share = new ACLMessage(ACLMessage.PROPOSE);
+								ACLMessage share = new ACLMessage(ACLMessage.INFORM);
 								share.setSender(a.getAID());
 							     try {
-							         Object[] oMsg =new Object[3];
+							         Object[] oMsg = new Object[4];
 							         oMsg[0] = a.alive;
 							         oMsg[1] = a.xPos;
 							         oMsg[2] = a.yPos;
+							         oMsg[3] = a.shareStrategy;
 							         
 							         share.setContentObject(oMsg);
 							     } catch (IOException ex) {
@@ -135,7 +136,7 @@ public class CreatureAgent extends Agent {
 		}
 	}
 	
-	public void setShareStrategy(ShareStrategyBehaviour shareStrategy) {
+	public void setShareStrategy(String shareStrategy) {
 		this.shareStrategy = shareStrategy;
 	}
 	

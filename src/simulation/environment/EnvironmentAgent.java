@@ -7,12 +7,16 @@ import generic.board.item.BoardItemGroup;
 import graphics.MainWindow;
 import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
 import jade.wrapper.AgentController;
 import jade.wrapper.ControllerException;
 import jade.wrapper.PlatformController;
+import simulation.creatures.CreatureAgent;
 import simulation.creatures.CreatureState;
 import simulation.creatures.SpecyState;
 import simulation.resources.Food;
@@ -42,6 +46,19 @@ public class EnvironmentAgent extends Agent {
 
 		this.registerInDFD();
 		this.setUpUI();
+		
+		addBehaviour(new CyclicBehaviour(this) {
+			public void action() {
+				ACLMessage msg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+				
+				if(msg != null) {
+					EnvironmentAgent a = (EnvironmentAgent) myAgent;
+				} else {
+					// Se não houver mensagem, bloquear behaviour.
+					block();
+				}
+			}
+		});
 	}
 
 	@Override
