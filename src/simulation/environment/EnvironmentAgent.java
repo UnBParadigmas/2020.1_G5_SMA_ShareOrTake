@@ -3,12 +3,10 @@ package simulation.environment;
 import java.util.ArrayList;
 import java.util.List;
 
-import generic.board.item.BoardItem;
 import generic.board.item.BoardItemGroup;
 import graphics.MainWindow;
 import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.Behaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -94,11 +92,12 @@ public class EnvironmentAgent extends Agent {
 		try {
 			for (int i = 0; i < amount; i++) {
 				String creatureName = speciesState.get(specyIndex).getName() + "_" + i;
+				int pos[] = CreatureState.getRandomPos(speciesState, minPos, maxPos);
+				
 				AgentController creatureCtl = container.createNewAgent(creatureName,
-						"simulation.creatures.CreatureAgent", new String[] { "OI" });
+						"simulation.creatures.CreatureAgent", new Object[] {pos[0], pos[1]});
 				creatureCtl.start();
 
-				int pos[] = CreatureState.getRandomPos(speciesState, minPos, maxPos);
 
 				speciesState.get(specyIndex)
 						.addCreatureState(new CreatureState(new AID(creatureName, AID.ISLOCALNAME), pos[0], pos[1]));
