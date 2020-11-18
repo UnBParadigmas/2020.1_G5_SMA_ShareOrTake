@@ -3,18 +3,20 @@ package simulation.environment;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JFrame;
-
 import generic.board.item.BoardItem;
 import generic.board.item.BoardItemGroup;
 import graphics.MainWindow;
+import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
-import simulation.creatures.Creature;
-import simulation.creatures.Specy;
+import jade.wrapper.AgentController;
+import jade.wrapper.ControllerException;
+import jade.wrapper.PlatformController;
+import simulation.creatures.CreatureState;
+import simulation.creatures.SpecyState;
 import simulation.resources.Food;
 
 /**
@@ -27,8 +29,8 @@ public class EnvironmentAgent extends Agent {
 
 	private MainWindow mainWindow = null;
 
-	private List<Specy> species = new ArrayList<>();
 	private List<Food> foodResources = new ArrayList<>();
+	private List<SpecyState> speciesState = new ArrayList<>();
 
 	@Override
 	protected void setup() {
@@ -52,94 +54,57 @@ public class EnvironmentAgent extends Agent {
 		}
 	}
 
-	private Behaviour behaviourTest() {
-		return new Behaviour() {
-
-			@Override
-			public boolean done() {
-				return false;
-			}
-
-			@Override
-			public void action() {
-			}
-		};
-	}
-
 	private void setUpUI() {
 		mainWindow = new MainWindow(new EnvironmentAgent(), 800, 800, BOARD_SIZE, BOARD_SIZE);
 		mainWindow.setVisible(true);
-
-		// Especies Adicionadas
-		species.add(new Specy("Dove", behaviourTest()));
-		species.add(new Specy("Evo", behaviourTest()));
-
-		// Teste de colisao dos items no board
-		createCreatures(species.get(0), 5, "/specy_1.png");
-		createCreatures(species.get(1), 2, "/specy_4.png");
 		
-		createFoodResources(5, "/food.png");
+		setUpFood();
+		setUpCreaturesAgents();
 	}
+	
+	private void setUpFood() {
+		BoardItemGroup foodGroup;
 
-	private void createFoodResources(int amount, String pathImage) {
-		for (int i = 0; i < amount; i++) {
-			this.foodResources.add(this.getFood(new Food(2), 0, BOARD_SIZE - 1));
-		}
+		Food.createFoodResources(this.foodResources, 5, 0, BOARD_SIZE - 1);
+		foodGroup = new BoardItemGroup(this.foodResources, "/food.png", 0, BOARD_SIZE - 1);
 
-		BoardItemGroup foodGroup = new BoardItemGroup(this.foodResources, pathImage, 0, BOARD_SIZE - 1);
 		mainWindow.insertElementsGroup(foodGroup);
 	}
 
-	private Food getFood(Food food, int minPos, int maxPos) {
-		setFoodRandomPos(food, minPos, maxPos);
-		return food;
-	}
-	
-	private void setFoodRandomPos(Food food, int minPos, int maxPos) {
-		boolean repeated;
-		do {
-			repeated = false;
-			food.randomPos(minPos, maxPos);
-			for (Food otherFood : this.foodResources) {
-				if (otherFood.getXPos() == food.getXPos() && otherFood.getYPos() == food.getYPos()) {
-					repeated = true;
-					break;
-				}
-			}
-		} while(repeated);
-	}
+	private void setUpCreaturesAgents() {
+		BoardItemGroup creaturesGroup;
 
-	private void createCreatures(Specy specy, int amount, String pathImage) {
-		for (int i = 0; i < amount; i++) {
-			specy.addCreature(getCreature(new Creature(), 0, BOARD_SIZE - 1));
+		// Especies Adicionadas
+		this.speciesState.add(new SpecyState("Dove", "/specy_1.png"));
+		this.speciesState.add(new SpecyState("Evo", "/specy_5.png"));
+
+		createCreatureAgents(this.speciesState, 0, 7, 0, BOARD_SIZE - 1);
+		createCreatureAgents(this.speciesState, 1, 2, 0, BOARD_SIZE - 1);
+
+		for (int i = 0; i < this.speciesState.size(); i++) {
+			creaturesGroup = new BoardItemGroup(this.speciesState.get(i).getCreaturesState(),
+					this.speciesState.get(i).getImagePath(), 0, BOARD_SIZE - 1);
+			mainWindow.insertElementsGroup(creaturesGroup);
 		}
-
-		BoardItemGroup creaturesGroup = new BoardItemGroup(specy.getCreatures(), pathImage, 0, BOARD_SIZE - 1);
-		mainWindow.insertElementsGroup(creaturesGroup);
 	}
 
-	private Creature getCreature(Creature creature, int minPos, int maxPos) {
-		setCreatureRandomPos(creature, minPos, maxPos);
-		return creature;
-	}
+	private void createCreatureAgents(List<SpecyState> speciesState, int specyIndex, int amount, int minPos, int maxPos) {
+		PlatformController container = getContainerController();
 
-	// Escolhe uma posicao aleatoria dentro dos limites e sem conflito com as outras
-	// criaturas
-	private void setCreatureRandomPos(BoardItem item, int minPos, int maxPos) {
-		boolean repeated;
-		do {
-			repeated = false;
-			item.randomPos(minPos, maxPos);
-			for (Specy specyGroup : species) {
-				for (BoardItem otherCreature : specyGroup.getCreatures()) {
-					if (otherCreature.getXPos() == item.getXPos() && otherCreature.getYPos() == item.getYPos()) {
-						repeated = true;
-						break;
-					}
-				}
-				if (repeated)
-					break;
+		try {
+			for (int i = 0; i < amount; i++) {
+				String creatureName = speciesState.get(specyIndex).getName() + "_" + i;
+				AgentController creatureCtl = container.createNewAgent(creatureName,
+						"simulation.creatures.CreatureAgent", new String[] { "OI" });
+				creatureCtl.start();
+
+				int pos[] = CreatureState.getRandomPos(speciesState, minPos, maxPos);
+
+				speciesState.get(specyIndex)
+						.addCreatureState(new CreatureState(new AID(creatureName, AID.ISLOCALNAME), pos[0], pos[1]));
 			}
-		} while (repeated);
+		} catch (ControllerException e) {
+			e.printStackTrace();
+		}
 	}
 }
