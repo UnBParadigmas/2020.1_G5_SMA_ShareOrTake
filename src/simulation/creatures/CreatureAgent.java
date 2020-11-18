@@ -2,6 +2,7 @@ package simulation.creatures;
 
 import jade.core.Agent;
 import jade.core.AID;
+import jade.core.behaviours.CyclicBehaviour;
 
 import jade.domain.DFService;
 import jade.domain.FIPAException;
@@ -33,7 +34,6 @@ public class CreatureAgent extends Agent {
 			this.alive = true;
 			
 			System.out.println("Criando criatura " + getLocalName());
-			
 			System.out.println("POS X: " + this.xPos + ", POS Y: " + this.yPos);
 		
 			this.registerInDFD();
@@ -43,14 +43,48 @@ public class CreatureAgent extends Agent {
 			hello.setContent(EnvironmentAgent.HELLO);
 			hello.addReceiver(new AID("host", AID.ISLOCALNAME));
 			
+			// Adicionar behaviour para mover quando chamado
+			addBehaviour(new CyclicBehaviour(this){
+				private static final long serialVersionUID = 1L;
+
+				public void action() {
+					ACLMessage msg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
+					
+					if (msg != null) {
+						switch (msg.getContent()) {
+							case EnvironmentAgent.MOVE:
+								// Move here
+								break;
+							case EnvironmentAgent.GOBACK:
+								// Go back here
+								break;
+							case EnvironmentAgent.SHARE:
+								// Share here
+								break;
+							case EnvironmentAgent.SLEEP:
+								// Sleep here
+								break;
+							case EnvironmentAgent.DIE:
+								// Die here
+								break;
+							default:
+								System.out.println("Mensagem inesperada.");
+						}
+					} else {
+						// Se não houver mensagem, bloquear behaviour.
+						block();
+					}
+				}
+			});
+			
 			// Add the behaviour to move each loop
-			addBehaviour(new MovementBehaviour());
+			// addBehaviour(new MovementBehaviour());
 			
 			// Add the share strategy behaviour
-			addBehaviour(new ShareStrategyBehaviour());
+			// addBehaviour(new ShareStrategyBehaviour());
 			
 			// Add the behaviour to sleep each loop
-			addBehaviour(new SleepBehaviour());
+			// addBehaviour(new SleepBehaviour());
 		} catch (Exception e){
 			System.out.println( "Exceção em " + e );
             e.printStackTrace();
