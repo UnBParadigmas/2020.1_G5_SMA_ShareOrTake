@@ -1,10 +1,17 @@
 package simulation.creatures;
 
 import jade.core.Agent;
-import simulation.behaviours.*;
+import jade.core.AID;
+
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
+
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
+
+import simulation.behaviours.*;
+import simulation.environment.*;
 
 /**
  * Agente que representa uma creatura generica
@@ -20,24 +27,34 @@ public class CreatureAgent extends Agent {
 	
 	@Override
 	protected void setup() {
-		this.xPos = (int) this.getArguments()[0];
-		this.yPos = (int) this.getArguments()[1];
-		this.alive = true;
+		try {
+			this.xPos = (int) this.getArguments()[0];
+			this.yPos = (int) this.getArguments()[1];
+			this.alive = true;
+			
+			System.out.println("Criando criatura " + getLocalName());
+			
+			System.out.println("POS X: " + this.xPos + ", POS Y: " + this.yPos);
 		
-		System.out.println("Criando criatura " + getLocalName());
+			this.registerInDFD();
 		
-		System.out.println("POS X: " + this.xPos + ", POS Y: " + this.yPos);
-
-		this.registerInDFD();
-		
-		// Add the behaviour to move each loop
-		addBehaviour(new MovementBehaviour());
-		
-		// Add the share strategy behaviour
-		addBehaviour(new ShareStrategyBehaviour());
-		
-		// Add the behaviour to sleep each loop
-		addBehaviour(new SleepBehaviour());
+			// Notificar board que a criatura está aqui
+			ACLMessage hello = new ACLMessage(ACLMessage.INFORM);
+			hello.setContent(EnvironmentAgent.HELLO);
+			hello.addReceiver(new AID("host", AID.ISLOCALNAME));
+			
+			// Add the behaviour to move each loop
+			addBehaviour(new MovementBehaviour());
+			
+			// Add the share strategy behaviour
+			addBehaviour(new ShareStrategyBehaviour());
+			
+			// Add the behaviour to sleep each loop
+			addBehaviour(new SleepBehaviour());
+		} catch (Exception e){
+			System.out.println( "Exceção em " + e );
+            e.printStackTrace();
+		}
 	}
 	
 	@Override

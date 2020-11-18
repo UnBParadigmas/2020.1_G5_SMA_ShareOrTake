@@ -21,9 +21,15 @@ import simulation.resources.Food;
  * Agente que controla o meio ambiente em que as criaturas estao inseridas
  */
 public class EnvironmentAgent extends Agent {
+	// Constantes
 	private static final long serialVersionUID = -6481631683157763680L;
-
 	private static final int BOARD_SIZE = 10;
+    public final static String HELLO = "HELLO";
+    public final static String ARRIVE = "ARRIVE";
+    public final static String SLEEP = "SLEEP";
+    public final static String UPDATE = "UPDATE";
+    public final static String DIE = "DIE";
+
 
 	private MainWindow mainWindow = null;
 
