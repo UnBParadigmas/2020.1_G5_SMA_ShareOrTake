@@ -33,8 +33,8 @@ public class ControllerMenu extends JPanel {
 	JLabel lblVelocity = new JLabel("Velocidade");
 	JLabel lblSliderVelocity = new JLabel();
 	private final JLabel lblSpecies = new JLabel("Espécies:");
-	private final JCheckBox chckbxDove = new JCheckBox("Dove (Compartilha)");
-	private final JCheckBox chckbxHawk = new JCheckBox("Hawk (Briga)");
+	private final JCheckBox chckbxDove = new JCheckBox("Dove (Amigavel)");
+	private final JCheckBox chckbxHawk = new JCheckBox("Hawk (Agressivo)");
 	private final JSpinner spinnerCreaturesAmount = new JSpinner();
 	private final JLabel lblCreaturesAmount = new JLabel("Quantidade de criaturas:");
 	private final JSpinner spinnerFoodAmount = new JSpinner();
@@ -148,7 +148,7 @@ public class ControllerMenu extends JPanel {
 		}
 
 		if (chckbxDove.isSelected() || chckbxHawk.isSelected()) {
-			enableControls(true);
+//			enableControls(true);
 
 			environment.addBehaviour(new OneShotBehaviour() {
 				private static final long serialVersionUID = 3276741274491102727L;

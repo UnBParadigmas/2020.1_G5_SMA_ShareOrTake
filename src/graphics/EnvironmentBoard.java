@@ -59,23 +59,22 @@ public class EnvironmentBoard extends Canvas {
 	}
 
 	private void drawElementsGroups(Graphics g) {
-		for (BoardItemGroup elementsGroup : this.elementsGroups) {
-			this.drawElements(g, elementsGroup);
+		for (int i = 0; i < this.elementsGroups.size(); i++) {
+			Image groupImage = this.resizeImage(elementsGroups.get(i).getGroupImage(), elementSize - GRID_LINE_THICKNESS,
+					elementSize - GRID_LINE_THICKNESS);
+			this.drawElements(g, elementsGroups.get(i), groupImage);
 		}
 	}
 
-	private void drawElements(Graphics g, BoardItemGroup elementsGroup) {
+	private void drawElements(Graphics g, BoardItemGroup elementsGroup, Image groupImage) {
 		for (int j = 0; j < elementsGroup.getBoardItems().size(); j++) {
-			this.drawElement(g, elementsGroup, elementsGroup.getBoardItems().get(j).getXPos(),
+			this.drawElement(g, groupImage, elementsGroup.getBoardItems().get(j).getXPos(),
 					elementsGroup.getBoardItems().get(j).getYPos());
 		}
 	}
 
-	private void drawElement(Graphics g, BoardItemGroup elementsGroup, int xPos, int yPos) {
-		Image image = this.resizeImage(elementsGroup.getGroupImage(), elementSize - GRID_LINE_THICKNESS,
-				elementSize - GRID_LINE_THICKNESS);
-
-		g.drawImage(image, getWindowPos(elementSize, xPos) + GRID_LINE_THICKNESS,
+	private void drawElement(Graphics g, Image groupImage, int xPos, int yPos) {
+		g.drawImage(groupImage, getWindowPos(elementSize, xPos) + GRID_LINE_THICKNESS,
 				getWindowPos(elementSize, yPos) + GRID_LINE_THICKNESS, this);
 	}
 
