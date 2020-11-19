@@ -78,8 +78,7 @@ public class EnvironmentAgent extends Agent {
 							coords.setSender(envAgent.getAID());
 							coords.addReceiver(msg.getSender());
 							try {
-								Object[] oMsg = new Object[3];
-								oMsg[0] = newCoords.getFoodAmount();
+								Object[] oMsg = new Object[2];
 								oMsg[1] = newCoords.getXPos();
 								oMsg[2] = newCoords.getYPos();
 

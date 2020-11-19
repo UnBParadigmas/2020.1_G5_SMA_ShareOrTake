@@ -133,8 +133,8 @@ public class CreatureAgent extends Agent {
 			Object[] oMsg = (Object []) msg.getContentObject();
 			ctrAgent.xPosOld = ctrAgent.xPos;
 			ctrAgent.yPosOld = ctrAgent.yPos;
-			ctrAgent.xPos = (int) oMsg[1];
-			ctrAgent.yPos = (int) oMsg[2];
+			ctrAgent.xPos = (int) oMsg[0];
+			ctrAgent.yPos = (int) oMsg[1];
 			
 			System.out.println("Nova posicao X: " + ctrAgent.xPos + " Nova posicao Y: " + ctrAgent.yPos);
  
