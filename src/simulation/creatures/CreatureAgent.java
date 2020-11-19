@@ -28,6 +28,8 @@ public class CreatureAgent extends Agent {
 	
 	private int xPos;
 	private int yPos;
+	private int xPosOld;
+	private int yPosOld;
 	private boolean alive;
 	private String shareStrategy;
 	
@@ -64,24 +66,6 @@ public class CreatureAgent extends Agent {
 							case ACLMessage.INFORM:
 								
 								switch (msg.getContent()) {
-									case EnvironmentAgent.SHARE:
-										ACLMessage share = new ACLMessage(ACLMessage.PROPOSE);
-										share.setSender(a.getAID());
-									     try {
-									         Object[] oMsg = new Object[4];
-									         oMsg[0] = a.alive;
-									         oMsg[1] = a.xPos;
-									         oMsg[2] = a.yPos;
-									         oMsg[3] = a.shareStrategy;
-									         
-									         share.setContentObject(oMsg);
-									     } catch (IOException ex) {
-									         System.err.println("Nao consegui reconhecer mensagem. Mandando mensagem vazia.");
-									         ex.printStackTrace(System.err);
-									     }
-									    share.addReceiver(msg.getSender());
-										send(share);
-										break;
 									case EnvironmentAgent.DEAD:
 										kill();
 										doDelete();
@@ -95,16 +79,42 @@ public class CreatureAgent extends Agent {
 							case ACLMessage.PROPOSE:
 								try {
 									Object[] oMsg = (Object []) msg.getContentObject();
+									a.xPosOld = a.xPos;
+									a.yPosOld = a.yPos;
 									a.xPos = (int) oMsg[1];
 									a.yPos = (int) oMsg[2];
+									
 									System.out.println("Nova posicao X: " + a.xPos + " Nova posicao Y: " + a.yPos);
 									System.out.println("Comida disponivel: "+ oMsg[0]);
+									
+									
 									 
 								} catch (UnreadableException e) {
 									// Nao reconheci a mensagem.
+									System.out.println("Não consegui ler a posição nova!");
 									e.printStackTrace();
 								}
 								break;
+							case ACLMessage.ACCEPT_PROPOSAL:
+								ACLMessage share = new ACLMessage(ACLMessage.PROPOSE);
+								share.setSender(a.getAID());
+							     try {
+							         Object[] oMsg = new Object[4];
+							         oMsg[0] = a.alive;
+							         oMsg[1] = a.xPos;
+							         oMsg[2] = a.yPos;
+							         oMsg[3] = a.shareStrategy;
+							         
+							         share.setContentObject(oMsg);
+							     } catch (IOException ex) {
+							         System.err.println("Nao consegui reconhecer mensagem. Mandando mensagem vazia.");
+							         ex.printStackTrace(System.err);
+							     }
+							    share.addReceiver(msg.getSender());
+								send(share);
+								break;
+							default:
+								System.out.println("Mensagem no formato inesperado. (creature");
 						}
 								
 					} else {

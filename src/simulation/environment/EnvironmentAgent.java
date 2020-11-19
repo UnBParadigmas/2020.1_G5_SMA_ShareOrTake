@@ -13,6 +13,7 @@ import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
+import jade.lang.acl.UnreadableException;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.wrapper.AgentController;
 import jade.wrapper.ControllerException;
@@ -41,6 +42,9 @@ public class EnvironmentAgent extends Agent {
 	private List<Food> foodResources = new ArrayList<>();
 	private List<Food> randomFood = new ArrayList<>();
 	private List<SpecyState> speciesState = new ArrayList<>();
+	private List<CreatureState> creaturePool = new ArrayList<>();
+	private int totalIterations = 0;
+	private int currentIteration = 0;
 
 	@Override
 	protected void setup() {
@@ -90,6 +94,23 @@ public class EnvironmentAgent extends Agent {
 
 						break;
 					case ACLMessage.ACCEPT_PROPOSAL:
+						try {
+							Object[] oMsg = (Object []) msg.getContentObject();
+							CreatureState creature = new CreatureState(new AID(),
+																	   (int) oMsg[1],
+																	   (int) oMsg[2],
+																	   (String) oMsg[3]);
+							envAgent.creaturePool.add(creature);
+							envAgent.currentIteration-= 1;
+							if(envAgent.currentIteration == 0) {
+								
+							}
+				 
+						} catch (UnreadableException e) {
+							// Nao reconheci a mensagem.
+							System.out.println("Não consegui ler a posição nova!");
+							e.printStackTrace();
+						}
 						break;
 					default:
 						break;
@@ -172,6 +193,7 @@ public class EnvironmentAgent extends Agent {
 			creaturesGroup = new BoardItemGroup(this.speciesState.get(i).getCreaturesState(),
 					this.speciesState.get(i).getImagePath());
 			mainWindow.insertElementsGroup(creaturesGroup);
+			this.totalIterations+= 1;
 		}
 	}
 
