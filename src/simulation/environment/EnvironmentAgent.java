@@ -1,5 +1,6 @@
 package simulation.environment;
 
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +8,7 @@ import generic.board.item.BoardItemGroup;
 import graphics.MainWindow;
 import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -23,10 +25,10 @@ import simulation.resources.Food;
 public class EnvironmentAgent extends Agent {
 	private static final long serialVersionUID = -6481631683157763680L;
 
-	private static final int BOARD_SIZE = 10;
-
 	private MainWindow mainWindow = null;
-
+	
+	int boardSize = 0;
+	
 	private List<Food> foodResources = new ArrayList<>();
 	private List<SpecyState> speciesState = new ArrayList<>();
 
@@ -41,6 +43,13 @@ public class EnvironmentAgent extends Agent {
 	@Override
 	protected void takeDown() {
 	}
+	
+	public void startSimulation(int boardSize, List<SpecyState> species, int creaturesPerSpecy, int foodAmount) {
+		this.boardSize = boardSize;
+		
+		setUpFood(foodAmount);
+		setUpCreaturesAgents(species, creaturesPerSpecy);
+	}
 
 	private void registerInDFD() {
 		try {
@@ -53,35 +62,31 @@ public class EnvironmentAgent extends Agent {
 	}
 
 	private void setUpUI() {
-		mainWindow = new MainWindow(new EnvironmentAgent(), 800, 800, BOARD_SIZE, BOARD_SIZE);
+		mainWindow = new MainWindow(this);
 		mainWindow.setVisible(true);
-		
-		setUpFood();
-		setUpCreaturesAgents();
 	}
 	
-	private void setUpFood() {
+	private void setUpFood(int foodAmount) {
 		BoardItemGroup foodGroup;
 
-		Food.createFoodResources(this.foodResources, 5, 0, BOARD_SIZE - 1);
-		foodGroup = new BoardItemGroup(this.foodResources, "/food.png", 0, BOARD_SIZE - 1);
+		Food.createFoodResources(this.foodResources, foodAmount, 0, boardSize - 1);
+		foodGroup = new BoardItemGroup(this.foodResources, "/food.png");
 
 		mainWindow.insertElementsGroup(foodGroup);
 	}
 
-	private void setUpCreaturesAgents() {
+	private void setUpCreaturesAgents(List<SpecyState> species, int creaturesPerSpecy) {
 		BoardItemGroup creaturesGroup;
-
+		
 		// Especies Adicionadas
-		this.speciesState.add(new SpecyState("Dove", "/specy_1.png"));
-		this.speciesState.add(new SpecyState("Evo", "/specy_5.png"));
-
-		createCreatureAgents(this.speciesState, 0, 7, 0, BOARD_SIZE - 1);
-		createCreatureAgents(this.speciesState, 1, 2, 0, BOARD_SIZE - 1);
+		speciesState = species;
+//		this.speciesState.add(new SpecyState("Dove", "/specy_1.png"));
+//		this.speciesState.add(new SpecyState("Evo", "/specy_5.png"));
 
 		for (int i = 0; i < this.speciesState.size(); i++) {
+			createCreatureAgents(this.speciesState, i, creaturesPerSpecy, 0, boardSize - 1);
 			creaturesGroup = new BoardItemGroup(this.speciesState.get(i).getCreaturesState(),
-					this.speciesState.get(i).getImagePath(), 0, BOARD_SIZE - 1);
+					this.speciesState.get(i).getImagePath());
 			mainWindow.insertElementsGroup(creaturesGroup);
 		}
 	}
