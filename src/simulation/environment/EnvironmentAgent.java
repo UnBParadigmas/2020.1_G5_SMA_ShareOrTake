@@ -257,9 +257,11 @@ public class EnvironmentAgent extends Agent {
 			switch (strat1) {
 				case CreatureState.FRIENDLY:
 					agentGoBack(envAgent, creature1);
+					agentGoBack(envAgent, creature2);
 					break;
 				case CreatureState.AGGRESSIVE:
 					agentKill(envAgent, creature1);
+					agentKill(envAgent, creature2);
 					break;
 				default:
 					
@@ -268,8 +270,10 @@ public class EnvironmentAgent extends Agent {
 			switch (strat1) {
 				case CreatureState.FRIENDLY:
 					agentChanceSurvive(envAgent, creature1, 0.5);
+					agentChanceReproduce(envAgent, creature2, 0.5);
 					break;
 				case CreatureState.AGGRESSIVE:
+					agentChanceSurvive(envAgent, creature2, 0.5);
 					agentChanceReproduce(envAgent, creature1, 0.5);
 					break;
 				default:
