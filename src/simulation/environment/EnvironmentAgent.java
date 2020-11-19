@@ -236,4 +236,13 @@ public class EnvironmentAgent extends Agent {
 		}
 		return randomSequence;
 	}
+	
+	private boolean checkDuplicates(CreatureState creature1, CreatureState creature2) {
+		if(creature1.getXPos() == creature2.getXPos()) {
+			if(creature1.getYPos() == creature2.getYPos()) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
