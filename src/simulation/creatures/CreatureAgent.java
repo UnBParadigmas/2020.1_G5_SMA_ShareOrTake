@@ -76,7 +76,7 @@ public class CreatureAgent extends Agent {
 									         
 									         share.setContentObject(oMsg);
 									     } catch (IOException ex) {
-									         System.err.println("N�o consegui reconhecer mensagem. Mandando mensagem vazia.");
+									         System.err.println("Nao consegui reconhecer mensagem. Mandando mensagem vazia.");
 									         ex.printStackTrace(System.err);
 									     }
 									    share.addReceiver(msg.getSender());
@@ -84,15 +84,10 @@ public class CreatureAgent extends Agent {
 										break;
 									case EnvironmentAgent.DEAD:
 										kill();
-										ACLMessage dead = new ACLMessage(ACLMessage.INFORM);
-										dead.setContent(EnvironmentAgent.DEAD);
-										dead.setSender(a.getAID());
-										dead.addReceiver(msg.getSender());
-										send(dead);
-										takeDown();
+										doDelete();
 										break;
 									default:
-										System.out.println("Mensagem inesperada.");
+										System.out.println("Mensagem inesperada (creature).");
 								}	
 								
 								break;
@@ -106,20 +101,20 @@ public class CreatureAgent extends Agent {
 									System.out.println("Comida disponivel: "+ oMsg[0]);
 									 
 								} catch (UnreadableException e) {
-									// N�o reconheci a mensagem.
+									// Nao reconheci a mensagem.
 									e.printStackTrace();
 								}
 								break;
 						}
 								
 					} else {
-						// Se n�o houver mensagem, bloquear behaviour.
+						// Se nao houver mensagem, bloquear behaviour.
 						block();
 					}
 				}
 			});
 		} catch (Exception e){
-			System.out.println( "Exce��o em " + e );
+			System.out.println( "Excecao em " + e );
             e.printStackTrace();
 		}
 	}
@@ -127,6 +122,7 @@ public class CreatureAgent extends Agent {
 	@Override
 	protected void takeDown() {
 	  try {
+		  	System.out.println(getLocalName() + " morto");
             DFService.deregister(this);
         } catch (FIPAException fe) {
             fe.printStackTrace();

@@ -10,17 +10,23 @@ public class SpecyState{
 
     private String name;
 	private List<CreatureState> creaturesState = new ArrayList<CreatureState>();
+	private String shareStrategy;
 	private String imagePath;
 	
 	// Construtor parametrizado
-    public SpecyState(String name, String imagePath){
+    public SpecyState(String name, String shareSttrategy, String imagePath){
         this.name = name;
+        this.shareStrategy = shareSttrategy;
         this.imagePath = imagePath;
     }
 	
 	// Retorna o nome da espécie.
 	public String getName() {
 		return name;
+	}
+	
+	public String getShareStrategy() {
+		return this.shareStrategy;
 	}
 	
 	public String getImagePath() {
