@@ -45,11 +45,11 @@ public class CreatureAgent extends Agent {
 		
 			this.registerInDFD();
 		
-			// Notificar board que a criatura est� aqui
-			ACLMessage hello = new ACLMessage(ACLMessage.INFORM);
-			hello.setContent(EnvironmentAgent.HELLO);
-			hello.addReceiver(new AID("environment", AID.ISLOCALNAME));
-			send(hello);
+			// Notificar board que a criatura esta aqui
+//			ACLMessage hello = new ACLMessage(ACLMessage.INFORM);
+//			hello.setContent(EnvironmentAgent.HELLO);
+//			hello.addReceiver(new AID("environment", AID.ISLOCALNAME));
+//			send(hello);
 			
 			// Adicionar behaviour para mover quando chamado
 			addBehaviour(new CyclicBehaviour(this){
@@ -64,6 +64,14 @@ public class CreatureAgent extends Agent {
 							case ACLMessage.INFORM:
 								
 								switch (msg.getContent()) {
+									case EnvironmentAgent.DAY_ARAISE:
+										// Informacao de que esta de dia, a criatura deve procurar comida
+										seekFood();
+										break;
+									case EnvironmentAgent.NIGHT_FALL:
+										// Informacao de que esta de dia, a criatura deve voltar para casa
+										System.out.println(getLocalName() + " voltou para casa");
+										break;
 									case EnvironmentAgent.SHARE:
 										ACLMessage share = new ACLMessage(ACLMessage.PROPOSE);
 										share.setSender(a.getAID());
@@ -97,7 +105,7 @@ public class CreatureAgent extends Agent {
 									Object[] oMsg = (Object []) msg.getContentObject();
 									a.xPos = (int) oMsg[1];
 									a.yPos = (int) oMsg[2];
-									System.out.println("Nova posicao X: " + a.xPos + " Nova posicao Y: " + a.yPos);
+									System.out.println(getLocalName() + " Nova posicao X: " + a.xPos + " Y: " + a.yPos);
 									System.out.println("Comida disponivel: "+ oMsg[0]);
 									 
 								} catch (UnreadableException e) {
@@ -137,6 +145,15 @@ public class CreatureAgent extends Agent {
 		} catch (FIPAException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void seekFood() {
+		ACLMessage seekFoodMsg = new ACLMessage(ACLMessage.REQUEST);
+		
+		System.out.println(getLocalName() +  " foi procurar comida");
+		seekFoodMsg.setContent(EnvironmentAgent.FOOD_SEEK);
+		seekFoodMsg.addReceiver(new AID("environment", AID.ISLOCALNAME));
+		send(seekFoodMsg);
 	}
 	
 	public void setShareStrategy(String shareStrategy) {

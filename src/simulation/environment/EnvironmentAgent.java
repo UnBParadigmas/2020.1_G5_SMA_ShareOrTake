@@ -13,7 +13,9 @@ import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
+import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.ThreadedBehaviourFactory;
 import jade.wrapper.AgentController;
 import jade.wrapper.ControllerException;
 import jade.wrapper.PlatformController;
@@ -28,11 +30,13 @@ public class EnvironmentAgent extends Agent {
 	// Constantes
 	private static final long serialVersionUID = -6481631683157763680L;
 
-	public final static String HELLO = "HELLO";
 	public final static String SHARE = "SHARE";
 	public final static String GOBACK = "GOBACK";
 	public final static String DEAD = "DEAD";
 	public final static String MOVE = "MOVE";
+	public final static String DAY_ARAISE = "DAY_ARAISE";
+	public final static String NIGHT_FALL = "NIGHT_FALL";
+	public final static String FOOD_SEEK = "FOOD_SEEK";
 
 	private MainWindow mainWindow = null;
 
@@ -54,36 +58,20 @@ public class EnvironmentAgent extends Agent {
 
 			public void action() {
 				ACLMessage msg = receive();
-				EnvironmentAgent envAgent = (EnvironmentAgent) this.myAgent;
 
 				if (msg != null) {
 					switch (msg.getPerformative()) {
+					case ACLMessage.REQUEST:
+						
+						switch (msg.getContent()) {
+						case EnvironmentAgent.FOOD_SEEK:
+							// Requisicao de comida pelas criaturas
+							fulfillFoodSeekRequest(msg);
+						}
+						break;
 					case ACLMessage.INFORM:
 
 						switch (msg.getContent()) {
-						case EnvironmentAgent.HELLO:
-							// Hello
-							System.out.println("Amigo estou aqui");
-							if (envAgent.randomFood == null || envAgent.randomFood.isEmpty()) {
-								envAgent.randomFood = randomElementOneRepeat(envAgent.foodResources);
-							}
-							Food newCoords = envAgent.randomFood.get(0);
-							envAgent.randomFood.remove(0);
-							ACLMessage coords = new ACLMessage(ACLMessage.PROPOSE);
-							coords.setSender(envAgent.getAID());
-							coords.addReceiver(msg.getSender());
-							try {
-								Object[] oMsg = new Object[3];
-								oMsg[0] = newCoords.getFoodAmount();
-								oMsg[1] = newCoords.getXPos();
-								oMsg[2] = newCoords.getYPos();
-
-								coords.setContentObject(oMsg);
-							} catch (IOException ex) {
-								System.err.println("Nao consegui reconhecer mensagem. Mandando mensagem vazia.");
-								ex.printStackTrace(System.err);
-							}
-							send(coords);
 						default:
 							System.out.println("Mensagem inesperada (ambiente).");
 						}
@@ -105,6 +93,57 @@ public class EnvironmentAgent extends Agent {
 	@Override
 	protected void takeDown() {
 	}
+	
+	//Comportamento de Controle Temporal (Passagem dos dias)
+	class IncrementDaysBehaviour extends Behaviour{
+		
+		private static final long serialVersionUID = 1L;
+		
+		// Se altera em dia e noite
+		private boolean isDay = false;
+		private int daysCount = 0;
+		
+		long delay;
+
+		public IncrementDaysBehaviour(Agent a, long delay) {
+			super(a);
+			this.delay = delay;
+		}
+
+		public void action() {
+			try {
+				Thread.sleep(delay);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			isDay = !isDay;
+			if (isDay) {
+				daysCount++;
+				dayAlert();
+			} else {
+				nightAlert();
+			}
+		}
+
+		public boolean done () {
+			System.out.println ((isDay ?  "DIA " : "NOITE ") + daysCount);
+			return daysCount > 10;
+		}
+
+	}
+	
+	// Alerta para todas as criaturas informando que esta de dia
+	// As criaturas devem procurar comida pelo ambiente
+	private void dayAlert() {
+		sendBroadCast(ACLMessage.INFORM, DAY_ARAISE);
+	}
+	
+	// Alerta para todas as criaturas informando que esta de noite
+	// Todas as criaturas devem voltar a sua posicao inicial
+	private void nightAlert() {
+		sendBroadCast(ACLMessage.INFORM, NIGHT_FALL);
+	}
 
 	public void startSimulation(int boardSize, List<SpecyState> species, int creaturesPerSpecy, int foodAmount) {
 		this.boardSize = boardSize;
@@ -112,21 +151,26 @@ public class EnvironmentAgent extends Agent {
 		System.out.println("---------- INICIANDO SIMULACAO ----------");
 		setUpFood(foodAmount);
 		setUpCreaturesAgents(species, creaturesPerSpecy);
+		
+		System.out.println("Inicia rotina de controle temporal (passagem dos dias)");
+		ThreadedBehaviourFactory incDayThread = new ThreadedBehaviourFactory();
+		Behaviour incDayBehaviour = new IncrementDaysBehaviour(this, 1000);
+		addBehaviour(incDayThread.wrap(incDayBehaviour));
 	}
 	
-	public void stopSimulation() {		
-		resetStates();
+	public void stopSimulation() {
+		mainWindow.clearBoard();
+		sendBroadCast(ACLMessage.INFORM, DEAD);
 		System.out.println("---------- PARANDO SIMULACAO ----------");
 	}
 
-	private void resetStates() {
-		mainWindow.clearBoard();
-
+	// Envia a mesma mensagem a todas as criaturas
+	private void sendBroadCast(int type, String content) {
 		for (SpecyState specy : speciesState) {
 			for (CreatureState creature : specy.getCreaturesState()) {
-				ACLMessage msg = new ACLMessage( ACLMessage.INFORM );
+				ACLMessage msg = new ACLMessage(type);
 				
-				msg.setContent(DEAD);
+				msg.setContent(content);
 	            msg.addReceiver(creature.getId());
 	            send(msg);
 			}
@@ -164,8 +208,6 @@ public class EnvironmentAgent extends Agent {
 
 		// Especies Adicionadas
 		speciesState = species;
-//		this.speciesState.add(new SpecyState("Dove", CreatureState.FRIENDLY, "/specy_1.png"));
-//		this.speciesState.add(new SpecyState("Evo", CreatureState.AGGRESSIVE, "/specy_5.png"));
 
 		for (int i = 0; i < this.speciesState.size(); i++) {
 			createCreatureAgents(this.speciesState, i, creaturesPerSpecy, 0, boardSize - 1);
@@ -194,6 +236,30 @@ public class EnvironmentAgent extends Agent {
 		} catch (ControllerException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void fulfillFoodSeekRequest(ACLMessage msg) {
+		System.out.println(msg.getSender().getLocalName() + " requisita comida");
+		if (this.randomFood == null || this.randomFood.isEmpty()) {
+			this.randomFood = randomElementOneRepeat(this.foodResources);
+		}
+		Food newCoords = this.randomFood.get(0);
+		this.randomFood.remove(0);
+		ACLMessage coords = new ACLMessage(ACLMessage.PROPOSE);
+		coords.setSender(this.getAID());
+		coords.addReceiver(msg.getSender());
+		try {
+			Object[] oMsg = new Object[3];
+			oMsg[0] = newCoords.getFoodAmount();
+			oMsg[1] = newCoords.getXPos();
+			oMsg[2] = newCoords.getYPos();
+
+			coords.setContentObject(oMsg);
+		} catch (IOException ex) {
+			System.err.println("Mensagem de busca por comida incompleta.");
+			ex.printStackTrace(System.err);
+		}
+		send(coords);
 	}
 
 	private List<Food> randomElementOneRepeat(List<Food> foods) {
