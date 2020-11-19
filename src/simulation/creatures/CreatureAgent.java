@@ -3,8 +3,6 @@ package simulation.creatures;
 import jade.core.Agent;
 
 import java.io.IOException;
-import java.io.Serializable;
-
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
 
@@ -13,7 +11,6 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 
 import jade.lang.acl.ACLMessage;
-import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 import simulation.environment.*;
 
@@ -30,8 +27,8 @@ public class CreatureAgent extends Agent {
 	private int yPos;
 	private int xPosOld;
 	private int yPosOld;
-	private boolean alive;
 	private String shareStrategy;
+	private String speciesName;
 	
 	@Override
 	protected void setup() {
@@ -39,7 +36,7 @@ public class CreatureAgent extends Agent {
 			this.xPos = (int) this.getArguments()[0];
 			this.yPos = (int) this.getArguments()[1];
 			this.shareStrategy  = (String) this.getArguments()[2];
-			this.alive = true;
+			this.speciesName = (String) this.getArguments()[3];
 			
 			System.out.println("Criando criatura " + getLocalName());
 			System.out.println("POS X: " + this.xPos + ", POS Y: " + this.yPos);
@@ -131,7 +128,6 @@ public class CreatureAgent extends Agent {
 	
 	
 	public void kill() {
-		this.alive = false;
 	}
 	
 	
@@ -180,10 +176,10 @@ public class CreatureAgent extends Agent {
 	
 	
 	private void doReproduceRequest(CreatureAgent ctrAgent, ACLMessage origin) {
-		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 		msg.addReceiver(origin.getSender());
 		msg.setSender(ctrAgent.getAID());
-		msg.setContent(EnvironmentAgent.REPRODUCE);
+		msg.setContent(ctrAgent.speciesName);
 		send(msg);
 	}
 }

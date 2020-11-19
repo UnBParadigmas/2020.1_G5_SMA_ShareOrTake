@@ -66,30 +66,33 @@ public class EnvironmentAgent extends Agent {
 					case ACLMessage.INFORM:
 
 						switch (msg.getContent()) {
-						case EnvironmentAgent.HELLO:
-							// Hello
-							System.out.println("Amigo estou aqui");
-							if (envAgent.randomFood == null || envAgent.randomFood.isEmpty()) {
-								envAgent.randomFood = randomElementOneRepeat(envAgent.foodResources);
-							}
-							Food newCoords = envAgent.randomFood.get(0);
-							envAgent.randomFood.remove(0);
-							ACLMessage coords = new ACLMessage(ACLMessage.PROPOSE);
-							coords.setSender(envAgent.getAID());
-							coords.addReceiver(msg.getSender());
-							try {
-								Object[] oMsg = new Object[2];
-								oMsg[0] = newCoords.getXPos();
-								oMsg[1] = newCoords.getYPos();
-
-								coords.setContentObject(oMsg);
-							} catch (IOException ex) {
-								System.err.println("Nao consegui reconhecer mensagem. Mandando mensagem vazia.");
-								ex.printStackTrace(System.err);
-							}
-							send(coords);
-						default:
-							System.out.println("Mensagem inesperada (ambiente).");
+							case EnvironmentAgent.HELLO:
+								// Hello
+								System.out.println("Amigo estou aqui");
+								if (envAgent.randomFood == null || envAgent.randomFood.isEmpty()) {
+									envAgent.randomFood = randomElementOneRepeat(envAgent.foodResources);
+								}
+								Food newCoords = envAgent.randomFood.get(0);
+								envAgent.randomFood.remove(0);
+								ACLMessage coords = new ACLMessage(ACLMessage.PROPOSE);
+								coords.setSender(envAgent.getAID());
+								coords.addReceiver(msg.getSender());
+								try {
+									Object[] oMsg = new Object[2];
+									oMsg[0] = newCoords.getXPos();
+									oMsg[1] = newCoords.getYPos();
+	
+									coords.setContentObject(oMsg);
+								} catch (IOException ex) {
+									System.err.println("Nao consegui reconhecer mensagem. Mandando mensagem vazia.");
+									ex.printStackTrace(System.err);
+								}
+								send(coords);
+							case EnvironmentAgent.REPRODUCE:
+								doReproduce(msg);
+								break;
+							default:
+								System.out.println("Mensagem inesperada (ambiente).");
 						}
 
 						break;
@@ -112,6 +115,7 @@ public class EnvironmentAgent extends Agent {
 						}
 						break;
 					default:
+						System.out.println("Formato inesperado (ambiente).");
 						break;
 					}
 				} else {
@@ -208,7 +212,8 @@ public class EnvironmentAgent extends Agent {
 						"simulation.creatures.CreatureAgent",
 						new Object[] { pos[0], 
 									   pos[1], 
-									   species.get(specyIndex).getShareStrategy(),});
+									   species.get(specyIndex).getShareStrategy(),
+									   species.get(specyIndex).getName()});
 				creatureCtl.start();
 
 				species.get(specyIndex).addCreatureState(new CreatureState(new AID(creatureName, AID.ISLOCALNAME),
@@ -295,6 +300,15 @@ public class EnvironmentAgent extends Agent {
 		}
 		creaturePool.clear();
 		envAgent.currentIteration = envAgent.totalIterations;
+	}
+	
+	private void doReproduce(ACLMessage msg) {
+		for(SpecyState species : speciesState) {
+			if(species.getName().equals(msg.getContent())) {
+				createCreatureAgents(speciesState, speciesState.indexOf(species.getName()), 1, 0, boardSize - 1);
+				this.totalIterations+= 1;
+			}
+		}
 	}
 	
 	private void agentGoBack(EnvironmentAgent envAgent, CreatureState creature) {
