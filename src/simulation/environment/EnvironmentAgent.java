@@ -14,6 +14,7 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
 import jade.core.behaviours.Behaviour;
+import jade.lang.acl.UnreadableException;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.ThreadedBehaviourFactory;
 import jade.wrapper.AgentController;
@@ -45,6 +46,9 @@ public class EnvironmentAgent extends Agent {
 	private List<Food> foodResources = new ArrayList<>();
 	private List<Food> randomFood = new ArrayList<>();
 	private List<SpecyState> speciesState = new ArrayList<>();
+	private List<CreatureState> creaturePool = new ArrayList<>();
+	private int totalIterations = 0;
+	private int currentIteration = 0;
 
 	@Override
 	protected void setup() {
@@ -62,7 +66,7 @@ public class EnvironmentAgent extends Agent {
 				if (msg != null) {
 					switch (msg.getPerformative()) {
 					case ACLMessage.REQUEST:
-						
+
 						switch (msg.getContent()) {
 						case EnvironmentAgent.FOOD_SEEK:
 							// Requisicao de comida pelas criaturas
@@ -78,6 +82,21 @@ public class EnvironmentAgent extends Agent {
 
 						break;
 					case ACLMessage.ACCEPT_PROPOSAL:
+						try {
+							Object[] oMsg = (Object[]) msg.getContentObject();
+							CreatureState creature = new CreatureState(new AID(), (int) oMsg[1], (int) oMsg[2],
+									(String) oMsg[3]);
+							creaturePool.add(creature);
+							currentIteration -= 1;
+							if (currentIteration == 0) {
+
+							}
+
+						} catch (UnreadableException e) {
+							// Nao reconheci a mensagem.
+							System.out.println("Nao consegui ler a posicao nova! (ambiente)");
+							e.printStackTrace();
+						}
 						break;
 					default:
 						break;
@@ -93,16 +112,16 @@ public class EnvironmentAgent extends Agent {
 	@Override
 	protected void takeDown() {
 	}
-	
-	//Comportamento de Controle Temporal (Passagem dos dias)
-	class IncrementDaysBehaviour extends Behaviour{
-		
+
+	// Comportamento de Controle Temporal (Passagem dos dias)
+	class IncrementDaysBehaviour extends Behaviour {
+
 		private static final long serialVersionUID = 1L;
-		
+
 		// Se altera em dia e noite
 		private boolean isDay = false;
 		private int daysCount = 0;
-		
+
 		long delay;
 
 		public IncrementDaysBehaviour(Agent a, long delay) {
@@ -116,7 +135,7 @@ public class EnvironmentAgent extends Agent {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			
+
 			isDay = !isDay;
 			if (isDay) {
 				daysCount++;
@@ -126,19 +145,19 @@ public class EnvironmentAgent extends Agent {
 			}
 		}
 
-		public boolean done () {
-			System.out.println ((isDay ?  "DIA " : "NOITE ") + daysCount);
+		public boolean done() {
+			System.out.println((isDay ? "DIA " : "NOITE ") + daysCount);
 			return daysCount > 10;
 		}
 
 	}
-	
+
 	// Alerta para todas as criaturas informando que esta de dia
 	// As criaturas devem procurar comida pelo ambiente
 	private void dayAlert() {
 		sendBroadCast(ACLMessage.INFORM, DAY_ARAISE);
 	}
-	
+
 	// Alerta para todas as criaturas informando que esta de noite
 	// Todas as criaturas devem voltar a sua posicao inicial
 	private void nightAlert() {
@@ -151,13 +170,13 @@ public class EnvironmentAgent extends Agent {
 		System.out.println("---------- INICIANDO SIMULACAO ----------");
 		setUpFood(foodAmount);
 		setUpCreaturesAgents(species, creaturesPerSpecy);
-		
+
 		System.out.println("Inicia rotina de controle temporal (passagem dos dias)");
 		ThreadedBehaviourFactory incDayThread = new ThreadedBehaviourFactory();
 		Behaviour incDayBehaviour = new IncrementDaysBehaviour(this, 1000);
 		addBehaviour(incDayThread.wrap(incDayBehaviour));
 	}
-	
+
 	public void stopSimulation() {
 		mainWindow.clearBoard();
 		sendBroadCast(ACLMessage.INFORM, DEAD);
@@ -169,10 +188,10 @@ public class EnvironmentAgent extends Agent {
 		for (SpecyState specy : speciesState) {
 			for (CreatureState creature : specy.getCreaturesState()) {
 				ACLMessage msg = new ACLMessage(type);
-				
+
 				msg.setContent(content);
-	            msg.addReceiver(creature.getId());
-	            send(msg);
+				msg.addReceiver(creature.getId());
+				send(msg);
 			}
 		}
 	}
@@ -214,6 +233,7 @@ public class EnvironmentAgent extends Agent {
 			creaturesGroup = new BoardItemGroup(this.speciesState.get(i).getCreaturesState(),
 					this.speciesState.get(i).getImagePath());
 			mainWindow.insertElementsGroup(creaturesGroup);
+			this.totalIterations += 1;
 		}
 	}
 
@@ -226,8 +246,8 @@ public class EnvironmentAgent extends Agent {
 				int pos[] = CreatureState.getRandomPos(species, minPos, maxPos);
 
 				AgentController creatureCtl = container.createNewAgent(creatureName,
-						"simulation.creatures.CreatureAgent",
-						new Object[] { pos[0], pos[1], species.get(specyIndex).getShareStrategy() });
+						"simulation.creatures.CreatureAgent", new Object[] { pos[0], pos[1],
+								species.get(specyIndex).getShareStrategy()});
 				creatureCtl.start();
 
 				species.get(specyIndex).addCreatureState(new CreatureState(new AID(creatureName, AID.ISLOCALNAME),
@@ -237,7 +257,7 @@ public class EnvironmentAgent extends Agent {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void fulfillFoodSeekRequest(ACLMessage msg) {
 		System.out.println(msg.getSender().getLocalName() + " requisita comida");
 		if (this.randomFood == null || this.randomFood.isEmpty()) {
@@ -279,5 +299,14 @@ public class EnvironmentAgent extends Agent {
 			}
 		}
 		return randomSequence;
+	}
+
+	private boolean checkDuplicates(CreatureState creature1, CreatureState creature2) {
+		if (creature1.getXPos() == creature2.getXPos()) {
+			if (creature1.getYPos() == creature2.getYPos()) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

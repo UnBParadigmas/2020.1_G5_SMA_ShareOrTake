@@ -28,16 +28,21 @@ public class CreatureAgent extends Agent {
 	
 	private int xPos;
 	private int yPos;
+	private int initialXPos;
+	private int initialYPos;
 	private boolean alive;
 	private String shareStrategy;
 	
 	@Override
 	protected void setup() {
 		try {
-			this.xPos = (int) this.getArguments()[0];
-			this.yPos = (int) this.getArguments()[1];
+			this.initialXPos = (int) this.getArguments()[0];
+			this.initialYPos = (int) this.getArguments()[1];
 			this.shareStrategy  = (String) this.getArguments()[2];
 			this.alive = true;
+			
+			this.xPos = this.initialXPos;
+			this.yPos = this.initialYPos;
 			
 			System.out.println("Criando criatura " + getLocalName());
 			System.out.println("POS X: " + this.xPos + ", POS Y: " + this.yPos);
@@ -105,14 +110,35 @@ public class CreatureAgent extends Agent {
 									Object[] oMsg = (Object []) msg.getContentObject();
 									a.xPos = (int) oMsg[1];
 									a.yPos = (int) oMsg[2];
+
 									System.out.println(getLocalName() + " Nova posicao X: " + a.xPos + " Y: " + a.yPos);
-									System.out.println("Comida disponivel: "+ oMsg[0]);
-									 
+									System.out.println(getLocalName() + " Comida disponivel: "+ oMsg[0]);
 								} catch (UnreadableException e) {
 									// Nao reconheci a mensagem.
+									System.out.println("N�o consegui ler a posi��o nova!");
 									e.printStackTrace();
 								}
 								break;
+							case ACLMessage.ACCEPT_PROPOSAL:
+								ACLMessage share = new ACLMessage(ACLMessage.PROPOSE);
+								share.setSender(a.getAID());
+							     try {
+							         Object[] oMsg = new Object[4];
+							         oMsg[0] = a.alive;
+							         oMsg[1] = a.xPos;
+							         oMsg[2] = a.yPos;
+							         oMsg[3] = a.shareStrategy;
+							         
+							         share.setContentObject(oMsg);
+							     } catch (IOException ex) {
+							         System.err.println("Nao consegui reconhecer mensagem. Mandando mensagem vazia.");
+							         ex.printStackTrace(System.err);
+							     }
+							    share.addReceiver(msg.getSender());
+								send(share);
+								break;
+							default:
+								System.out.println("Mensagem no formato inesperado. (creature");
 						}
 								
 					} else {
