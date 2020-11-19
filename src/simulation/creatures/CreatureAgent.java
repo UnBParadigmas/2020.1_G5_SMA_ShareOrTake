@@ -64,7 +64,7 @@ public class CreatureAgent extends Agent {
 						
 						switch (msg.getPerformative()) {
 							case ACLMessage.INFORM:
-								
+			
 								switch (msg.getContent()) {
 									case EnvironmentAgent.DEAD:
 										kill();
@@ -72,6 +72,10 @@ public class CreatureAgent extends Agent {
 										break;
 									case EnvironmentAgent.REPRODUCE:
 										doReproduceRequest(ctrAgent, msg);
+										break;
+									case EnvironmentAgent.GOBACK:
+										doGoBack(ctrAgent);
+										break;
 									default:
 										System.out.println("Mensagem inesperada (creature).");
 								}	
@@ -80,8 +84,6 @@ public class CreatureAgent extends Agent {
 								
 							case ACLMessage.PROPOSE:
 								doChangeCoords(ctrAgent, msg);
-								break;
-							case ACLMessage.ACCEPT_PROPOSAL:
 								doSendInfo(ctrAgent, msg);
 								break;
 							default:
@@ -100,6 +102,7 @@ public class CreatureAgent extends Agent {
 		}
 	}
 	
+	
 	@Override
 	protected void takeDown() {
 	  try {
@@ -109,6 +112,7 @@ public class CreatureAgent extends Agent {
             fe.printStackTrace();
         }
 	}
+	
 	
 	private void registerInDFD() {
 		try {
@@ -120,13 +124,16 @@ public class CreatureAgent extends Agent {
 		}
 	}
 	
+	
 	public void setShareStrategy(String shareStrategy) {
 		this.shareStrategy = shareStrategy;
 	}
 	
+	
 	public void kill() {
 		this.alive = false;
 	}
+	
 	
 	private void doChangeCoords(CreatureAgent ctrAgent, ACLMessage msg) {
 		try {
@@ -145,16 +152,22 @@ public class CreatureAgent extends Agent {
 		}
 	}
 	
+	
+	private void doGoBack(CreatureAgent ctrAgent) {
+		ctrAgent.xPos = ctrAgent.xPosOld;
+		ctrAgent.yPos = ctrAgent.yPosOld;
+	}
+	
+	
 	private void doSendInfo(CreatureAgent ctrAgent, ACLMessage msg) {
-		ACLMessage share = new ACLMessage(ACLMessage.PROPOSE);
+		ACLMessage share = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
 		share.setSender(ctrAgent.getAID());
 	     try {
-	         Object[] oMsg = new Object[5];
-	         oMsg[0] = ctrAgent.alive;
-	         oMsg[1] = ctrAgent.xPos;
-	         oMsg[2] = ctrAgent.yPos;
-	         oMsg[3] = ctrAgent.shareStrategy;
-	         oMsg[4] = ctrAgent.getAID();
+	         Object[] oMsg = new Object[4];
+	         oMsg[0] = ctrAgent.xPos;
+	         oMsg[1] = ctrAgent.yPos;
+	         oMsg[2] = ctrAgent.shareStrategy;
+	         oMsg[3] = ctrAgent.getAID();
 	         
 	         share.setContentObject(oMsg);
 	     } catch (IOException ex) {
@@ -164,6 +177,7 @@ public class CreatureAgent extends Agent {
 	    share.addReceiver(msg.getSender());
 		send(share);
 	}
+	
 	
 	private void doReproduceRequest(CreatureAgent ctrAgent, ACLMessage origin) {
 		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
