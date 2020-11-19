@@ -3,8 +3,6 @@ package simulation.creatures;
 import java.util.ArrayList;
 import java.util.List;
 
-import jade.core.behaviours.Behaviour;
-
 /*
  * Grupo de especies com os mesmos comportamentos
  */

@@ -1,6 +1,5 @@
 package simulation.resources;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import generic.board.item.BoardItem;
