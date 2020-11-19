@@ -207,7 +207,10 @@ public class EnvironmentAgent extends Agent {
 
 				AgentController creatureCtl = container.createNewAgent(creatureName,
 						"simulation.creatures.CreatureAgent",
-						new Object[] { pos[0], pos[1], species.get(specyIndex).getShareStrategy() });
+						new Object[] { pos[0], 
+									   pos[1], 
+									   species.get(specyIndex).getShareStrategy(),
+									   new AID(creatureName, AID.ISLOCALNAME)});
 				creatureCtl.start();
 
 				species.get(specyIndex).addCreatureState(new CreatureState(new AID(creatureName, AID.ISLOCALNAME),
