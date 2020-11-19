@@ -111,8 +111,8 @@ public class EnvironmentAgent extends Agent {
 		this.speciesState.add(new SpecyState("Dove", "/specy_1.png"));
 		this.speciesState.add(new SpecyState("Evo", "/specy_5.png"));
 
-		createCreatureAgents(this.speciesState, 0, 7, 0, BOARD_SIZE - 1);
-		createCreatureAgents(this.speciesState, 1, 2, 0, BOARD_SIZE - 1);
+		createCreatureAgents(this.speciesState, 0, 7, 0, BOARD_SIZE - 1, CreatureState.FRIENDLY);
+		createCreatureAgents(this.speciesState, 1, 2, 0, BOARD_SIZE - 1, CreatureState.AGGRESSIVE);
 
 		for (int i = 0; i < this.speciesState.size(); i++) {
 			creaturesGroup = new BoardItemGroup(this.speciesState.get(i).getCreaturesState(),
@@ -121,7 +121,7 @@ public class EnvironmentAgent extends Agent {
 		}
 	}
 
-	private void createCreatureAgents(List<SpecyState> speciesState, int specyIndex, int amount, int minPos, int maxPos) {
+	private void createCreatureAgents(List<SpecyState> speciesState, int specyIndex, int amount, int minPos, int maxPos, String shareStrategy) {
 		PlatformController container = getContainerController();
 
 		try {
@@ -130,12 +130,12 @@ public class EnvironmentAgent extends Agent {
 				int pos[] = CreatureState.getRandomPos(speciesState, minPos, maxPos);
 				
 				AgentController creatureCtl = container.createNewAgent(creatureName,
-						"simulation.creatures.CreatureAgent", new Object[] {pos[0], pos[1]});
+						"simulation.creatures.CreatureAgent", new Object[] {pos[0], pos[1], shareStrategy});
 				creatureCtl.start();
 
 
 				speciesState.get(specyIndex)
-						.addCreatureState(new CreatureState(new AID(creatureName, AID.ISLOCALNAME), pos[0], pos[1]));
+						.addCreatureState(new CreatureState(new AID(creatureName, AID.ISLOCALNAME), pos[0], pos[1], shareStrategy));
 			}
 		} catch (ControllerException e) {
 			e.printStackTrace();

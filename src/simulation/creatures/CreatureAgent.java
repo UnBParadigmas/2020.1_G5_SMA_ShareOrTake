@@ -36,10 +36,12 @@ public class CreatureAgent extends Agent {
 		try {
 			this.xPos = (int) this.getArguments()[0];
 			this.yPos = (int) this.getArguments()[1];
+			this.shareStrategy  = (String) this.getArguments()[2];
 			this.alive = true;
 			
 			System.out.println("Criando criatura " + getLocalName());
 			System.out.println("POS X: " + this.xPos + ", POS Y: " + this.yPos);
+			System.out.println("Estratégia: " + this.shareStrategy);
 		
 			this.registerInDFD();
 		
