@@ -11,6 +11,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 
 import jade.core.behaviours.OneShotBehaviour;
+import simulation.creatures.CreatureState;
 import simulation.creatures.SpecyState;
 import simulation.environment.EnvironmentAgent;
 
@@ -33,8 +34,8 @@ public class ControllerMenu extends JPanel {
 	JLabel lblVelocity = new JLabel("Velocidade");
 	JLabel lblSliderVelocity = new JLabel();
 	private final JLabel lblSpecies = new JLabel("Espécies:");
-	private final JCheckBox chckbxDove = new JCheckBox("Dove (Compartilha)");
-	private final JCheckBox chckbxHawk = new JCheckBox("Hawk (Briga)");
+	private final JCheckBox chckbxDove = new JCheckBox("Dove (Amigavel)");
+	private final JCheckBox chckbxHawk = new JCheckBox("Hawk (Agressivo)");
 	private final JSpinner spinnerCreaturesAmount = new JSpinner();
 	private final JLabel lblCreaturesAmount = new JLabel("Quantidade de criaturas:");
 	private final JSpinner spinnerFoodAmount = new JSpinner();
@@ -42,6 +43,7 @@ public class ControllerMenu extends JPanel {
 
 	private EnvironmentAgent environment;
 	private int boardSize = 0;
+	private boolean simulationRunning = false;
 
 	public ControllerMenu(EnvironmentAgent environment, int boardSize) {
 		this.environment = environment;
@@ -92,7 +94,11 @@ public class ControllerMenu extends JPanel {
 		btnStart.setBounds(0, 313, 236, 40);
 		btnStart.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				startSimulation(e);
+				if (simulationRunning) {
+					stopSimulation();
+				} else {
+					startSimulation();
+				}
 			}
 		});
 		add(btnStart);
@@ -117,6 +123,7 @@ public class ControllerMenu extends JPanel {
 		sliderVelocity.setBackground(new Color(0, 128, 128));
 		sliderVelocity.setValue(1);
 		sliderVelocity.setMaximum(10);
+		sliderVelocity.setEnabled(false);
 		sliderVelocity.addChangeListener(new javax.swing.event.ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				velocityChanged();
@@ -135,20 +142,20 @@ public class ControllerMenu extends JPanel {
 	void velocityChanged() {
 		lblSliderVelocity.setText(Integer.toString(sliderVelocity.getValue()));
 	}
-
+	
 	// Adiciona behaviour para iniciar a simulacao
-	void startSimulation(ActionEvent e) {
+	void startSimulation() {
 		List<SpecyState> species = new ArrayList<>();
 
 		if (chckbxDove.isSelected()) {
-			species.add(new SpecyState("Dove", "/specy_1.png"));
+			species.add(new SpecyState("dove", CreatureState.FRIENDLY, "/specy_1.png"));
 		}
 		if (chckbxHawk.isSelected()) {
-			species.add(new SpecyState("Dove", "/specy_2.png"));
+			species.add(new SpecyState("hawk", CreatureState.AGGRESSIVE, "/specy_2.png"));
 		}
 
 		if (chckbxDove.isSelected() || chckbxHawk.isSelected()) {
-			enableControls(true);
+			componentsState(true);
 
 			environment.addBehaviour(new OneShotBehaviour() {
 				private static final long serialVersionUID = 3276741274491102727L;
@@ -160,11 +167,31 @@ public class ControllerMenu extends JPanel {
 			});
 		}
 	}
+	
+	void stopSimulation() {
+		componentsState(false);
 
-	void enableControls(boolean starting) {
+		environment.addBehaviour(new OneShotBehaviour() {
+			private static final long serialVersionUID = 3276741274491102727L;
+
+			public void action() {
+				((EnvironmentAgent) myAgent).stopSimulation();
+			}
+		});
+	}
+
+	void componentsState(boolean starting) {
 		chckbxDove.setEnabled(!starting);
 		chckbxHawk.setEnabled(!starting);
 		spinnerCreaturesAmount.setEnabled(!starting);
 		spinnerFoodAmount.setEnabled(!starting);
+		handleSliderVelocity(starting);
+		btnStart.setText(starting ? "Parar" : "Iniciar");
+		this.simulationRunning = starting;
+	}
+	
+	private void handleSliderVelocity(boolean active) {
+		sliderVelocity.setEnabled(active);
+		sliderVelocity.setValue(!active? 1 : sliderVelocity.getValue());
 	}
 }

@@ -4,21 +4,25 @@ import java.util.List;
 
 import generic.board.item.BoardItem;
 import jade.core.AID;
-import jade.core.behaviours.Behaviour;
 
 /*
  * Caracteristicas da criatura
  */
 public class CreatureState extends BoardItem{
+	//Constants
+	public final static String FRIENDLY = "FRIENDLY";
+	public final static String AGGRESSIVE = "AGGRESSIVE";
 	
 	private AID creatureId;
 	private boolean alive;
+	private String shareStrategy;
 	
 	// Construtor parametrizado
-	public CreatureState (AID creatureId, int xPos, int yPos){
+	public CreatureState (AID creatureId, int xPos, int yPos, String shareStrategy){
 		this.creatureId = creatureId;
 		this.setXPos(xPos);
 		this.setYPos(yPos);
+		this.shareStrategy = shareStrategy;
 	
 		this.alive = true;
 	}
@@ -31,6 +35,13 @@ public class CreatureState extends BoardItem{
 	// Muda o status da criatura.
 	public void setStatus(boolean alive){
 		this.alive = alive;
+	}
+	
+	public AID getId() {
+		return creatureId;
+	}
+	public void setShareStrategy(String shareStrategy) {
+		this.shareStrategy = shareStrategy;
 	}
 	
 	// Gera a posicao aleatoria da criatura

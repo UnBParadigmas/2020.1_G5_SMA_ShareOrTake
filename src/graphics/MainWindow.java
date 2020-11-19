@@ -1,6 +1,5 @@
 package graphics;
 
-import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Toolkit;
@@ -42,6 +41,10 @@ public class MainWindow extends JFrame {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void clearBoard() {
+		this.envBoard.clearBoard();
 	}
 
 	public void insertElementsGroup(BoardItemGroup elementGroup) {
