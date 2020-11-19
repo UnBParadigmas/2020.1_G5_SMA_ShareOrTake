@@ -1,7 +1,9 @@
 package simulation.environment;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import generic.board.item.BoardItemGroup;
 import graphics.MainWindow;
@@ -38,6 +40,7 @@ public class EnvironmentAgent extends Agent {
 	private MainWindow mainWindow = null;
 
 	private List<Food> foodResources = new ArrayList<>();
+	private List<Food> randomFood = new ArrayList<>();
 	private List<SpecyState> speciesState = new ArrayList<>();
 
 	@Override
@@ -46,28 +49,53 @@ public class EnvironmentAgent extends Agent {
 
 		this.registerInDFD();
 		this.setUpUI();
-		
 		addBehaviour(new CyclicBehaviour(this) {
 			static final long serialVersionUID = 1L;
 
 			public void action() {
 				ACLMessage msg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-				
-				if(msg != null) {
-					EnvironmentAgent a = (EnvironmentAgent) myAgent;
-					
+				ACLMessage rqst = receive(MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
+				EnvironmentAgent a = (EnvironmentAgent) myAgent;
+				if(msg != null) {	
 					switch (msg.getContent()) {
 						case EnvironmentAgent.HELLO:
 							// Hello
 							System.out.println("Amigo estou aqui");
+							ACLMessage move = new ACLMessage(ACLMessage.INFORM);
+							move.setContent(EnvironmentAgent.MOVE);
+							move.setSender(a.getAID());
+							move.addReceiver(msg.getSender());
+						case EnvironmentAgent.SHARE: 
 							break;
 						default:
 							System.out.println("Mensagem inesperada.");
-					
 					}
 				} else {
-					// Se não houver mensagem, bloquear behaviour.
-					block();
+					if(rqst != null) {
+						if(a.randomFood == null) {
+							a.randomFood = randomElementOneRepeat(a.foodResources);
+						}
+						Food newCoords = a.randomFood.get(0);
+						a.randomFood.remove(0);
+						ACLMessage coords = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
+						coords.setSender(a.getAID());
+						coords.addReceiver(rqst.getSender());
+						try {
+					         Object[] oMsg = new Object[3];
+					         oMsg[0] = newCoords.getFoodAmount();
+					         oMsg[1] = newCoords.getXPos();
+					         oMsg[2] = newCoords.getYPos();
+					         
+					         coords.setContentObject(oMsg);
+					     } catch (IOException ex) {
+					         System.err.println("Não consegui reconhecer mensagem. Mandando mensagem vazia.");
+					         ex.printStackTrace(System.err);
+					     }	
+						send(coords);
+					} else {
+						// Se não houver mensagem nem request, bloquear behaviour.
+						block();
+					}
 				}
 			}
 		});
@@ -93,6 +121,7 @@ public class EnvironmentAgent extends Agent {
 		
 		setUpFood();
 		setUpCreaturesAgents();
+		this.randomFood = randomElementOneRepeat(this.foodResources); 
 	}
 	
 	private void setUpFood() {
@@ -140,5 +169,24 @@ public class EnvironmentAgent extends Agent {
 		} catch (ControllerException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private List<Food> randomElementOneRepeat(List<Food> foods) {
+	    List<Food> foodCopy = new ArrayList<>(foods);	    
+	    Random rand = new Random();
+	    List<Food> randomSequence = new ArrayList<>();
+	 	int numberOfElements = foods.size();
+	 	boolean repeat [] = null;
+	 	
+	    for (int i = 0; i < numberOfElements; i++) {
+	        int randomIndex = rand.nextInt(foodCopy.size());
+	        Food randomElement = foodCopy.get(randomIndex);
+	        randomSequence.add(randomElement);
+	        repeat[randomIndex] = true;
+	        if(repeat[randomIndex] == true) {
+	        	foodCopy.remove(randomIndex);
+	        }
+	    }
+	    return randomSequence;
 	}
 }

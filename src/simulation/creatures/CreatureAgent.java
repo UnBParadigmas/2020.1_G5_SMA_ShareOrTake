@@ -14,7 +14,6 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
-import simulation.behaviours.*;
 import simulation.environment.*;
 
 /**
@@ -69,7 +68,7 @@ public class CreatureAgent extends Agent {
 								// Go back here
 								break;
 							case EnvironmentAgent.SHARE:
-								ACLMessage share = new ACLMessage(ACLMessage.INFORM);
+								ACLMessage share = new ACLMessage(ACLMessage.PROPOSE);
 								share.setSender(a.getAID());
 							     try {
 							         Object[] oMsg = new Object[4];
@@ -104,15 +103,6 @@ public class CreatureAgent extends Agent {
 					}
 				}
 			});
-			
-			// Add the behaviour to move each loop
-			// addBehaviour(new MovementBehaviour());
-			
-			// Add the share strategy behaviour
-			// addBehaviour(new ShareStrategyBehaviour());
-			
-			// Add the behaviour to sleep each loop
-			// addBehaviour(new SleepBehaviour());
 		} catch (Exception e){
 			System.out.println( "Exceção em " + e );
             e.printStackTrace();

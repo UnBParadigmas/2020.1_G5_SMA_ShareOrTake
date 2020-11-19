@@ -4,7 +4,6 @@ import java.util.List;
 
 import generic.board.item.BoardItem;
 import jade.core.AID;
-import jade.core.behaviours.Behaviour;
 
 /*
  * Caracteristicas da criatura
