@@ -104,15 +104,8 @@ public class EnvironmentAgent extends Agent {
 							envAgent.creaturePool.add(creature);
 							envAgent.currentIteration-= 1;
 							if(envAgent.currentIteration == 0) {
-								for(int i = 0; i < envAgent.totalIterations; i++) {
-									for(int j = i+1; j < envAgent.totalIterations; i++) {
-										if(checkDuplicates(creaturePool.get(i), creaturePool.get(j))) {
-											compareStrategies(envAgent, creaturePool.get(i), creaturePool.get(j));
-										}
-									}
-								}
+								agentFoodTime(envAgent, creaturePool);
 							}
-				 
 						} catch (UnreadableException e) {
 							// Nao reconheci a mensagem.
 							System.out.println("Não consegui ler a posição nova!");
@@ -264,11 +257,9 @@ public class EnvironmentAgent extends Agent {
 			switch (strat1) {
 				case CreatureState.FRIENDLY:
 					agentGoBack(envAgent, creature1);
-					agentGoBack(envAgent, creature2);
 					break;
 				case CreatureState.AGGRESSIVE:
 					agentKill(envAgent, creature1);
-					agentKill(envAgent, creature2);
 					break;
 				default:
 					
@@ -277,16 +268,30 @@ public class EnvironmentAgent extends Agent {
 			switch (strat1) {
 				case CreatureState.FRIENDLY:
 					agentChanceSurvive(envAgent, creature1, 0.5);
-					agentChanceReproduce(envAgent, creature2, 0.5);
 					break;
 				case CreatureState.AGGRESSIVE:
-					agentChanceSurvive(envAgent, creature2, 0.5);
 					agentChanceReproduce(envAgent, creature1, 0.5);
 					break;
 				default:
 					
 			}
 		}
+	}
+	
+	// Handles what happens after all creatures have moved to eat.
+	private void agentFoodTime(EnvironmentAgent envAgent, List<CreatureState> creaturePool) {
+		int total = envAgent.totalIterations;
+		for(int i = 0; i < total; i++) {
+			for(int j = i+1; j < total; i++) {
+				if(checkDuplicates(creaturePool.get(i), creaturePool.get(j))) {
+					compareStrategies(envAgent, creaturePool.get(i), creaturePool.get(j));
+				}else if(j == (total-1)) {
+					agentGoBack(envAgent, creaturePool.get(i));
+				}
+			}
+		}
+		creaturePool.clear();
+		envAgent.currentIteration = envAgent.totalIterations;
 	}
 	
 	private void agentGoBack(EnvironmentAgent envAgent, CreatureState creature) {
@@ -302,6 +307,7 @@ public class EnvironmentAgent extends Agent {
 		msg.addReceiver(creature.getId());
 		msg.setSender(envAgent.getAID());
 		msg.setContent(EnvironmentAgent.DEAD);
+		envAgent.totalIterations-=1;
 		send(msg);
 	}
 	
@@ -311,6 +317,7 @@ public class EnvironmentAgent extends Agent {
 			msg.addReceiver(creature.getId());
 			msg.setSender(envAgent.getAID());
 			msg.setContent(EnvironmentAgent.REPRODUCE);
+			envAgent.totalIterations+=1;
 			send(msg);
 		} else {
 			agentGoBack(envAgent, creature);
@@ -323,6 +330,7 @@ public class EnvironmentAgent extends Agent {
 			msg.addReceiver(creature.getId());
 			msg.setSender(envAgent.getAID());
 			msg.setContent(EnvironmentAgent.DEAD);
+			envAgent.totalIterations-=1;
 			send(msg);
 		} else {
 			agentGoBack(envAgent, creature);
