@@ -46,7 +46,7 @@ public class CreatureAgent extends Agent {
 			// Notificar board que a criatura está aqui
 			ACLMessage hello = new ACLMessage(ACLMessage.INFORM);
 			hello.setContent(EnvironmentAgent.HELLO);
-			hello.addReceiver(new AID("host", AID.ISLOCALNAME));
+			hello.addReceiver(new AID("environment", AID.ISLOCALNAME));
 			send(hello);
 			
 			// Adicionar behaviour para mover quando chamado

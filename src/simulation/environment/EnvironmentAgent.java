@@ -34,7 +34,7 @@ public class EnvironmentAgent extends Agent {
     public final static String DEAD = "DEAD";
     public final static String MOVE = "MOVE";
 
-
+    
 	private MainWindow mainWindow = null;
 
 	private List<Food> foodResources = new ArrayList<>();
@@ -48,11 +48,23 @@ public class EnvironmentAgent extends Agent {
 		this.setUpUI();
 		
 		addBehaviour(new CyclicBehaviour(this) {
+			static final long serialVersionUID = 1L;
+
 			public void action() {
 				ACLMessage msg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
 				
 				if(msg != null) {
 					EnvironmentAgent a = (EnvironmentAgent) myAgent;
+					
+					switch (msg.getContent()) {
+						case EnvironmentAgent.HELLO:
+							// Hello
+							System.out.println("Amigo estou aqui");
+							break;
+						default:
+							System.out.println("Mensagem inesperada.");
+					
+					}
 				} else {
 					// Se não houver mensagem, bloquear behaviour.
 					block();
