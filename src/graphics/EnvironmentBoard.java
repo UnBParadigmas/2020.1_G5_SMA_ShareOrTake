@@ -16,16 +16,14 @@ public class EnvironmentBoard extends Canvas {
 
 	private static final int GRID_LINE_THICKNESS = 1;
 
+	private int panelBoardSize;
 	private int boardSize;
-	private int rows;
-	private int columns;
 	private int elementSize;
 
 	private List<BoardItemGroup> elementsGroups = new ArrayList<>();
 
-	public EnvironmentBoard(int rows, int columns) {
-		this.rows = rows;
-		this.columns = columns;
+	public EnvironmentBoard(int boardSize) {
+		this.boardSize = boardSize;
 	}
 
 	@Override
@@ -36,22 +34,23 @@ public class EnvironmentBoard extends Canvas {
 
 	public void insertElementsGroup(BoardItemGroup elementGroup) {
 		this.elementsGroups.add(elementGroup);
+		this.repaint();
 	}
 	
 	@Override
 	public void setBounds(int x, int y, int width, int height) {
 		super.setBounds(x, y, width, height);
-		this.boardSize = width;
-		this.elementSize = this.boardSize / (this.rows);
+		this.panelBoardSize = width;
+		this.elementSize = this.panelBoardSize / (this.boardSize);
 	}
 
 	private void drawGrid(Graphics g) {
-		for (int row = 0; row < this.rows; row++) {
-			g.drawLine(0, getWindowPos(this.elementSize, row), boardSize, getWindowPos(this.elementSize, row));
+		for (int row = 0; row < this.boardSize; row++) {
+			g.drawLine(0, getWindowPos(this.elementSize, row), panelBoardSize, getWindowPos(this.elementSize, row));
 		}
 
-		for (int col = 0; col < this.columns; col++) {
-			g.drawLine(getWindowPos(this.elementSize, col), 0, getWindowPos(this.elementSize, col), boardSize);
+		for (int col = 0; col < this.boardSize; col++) {
+			g.drawLine(getWindowPos(this.elementSize, col), 0, getWindowPos(this.elementSize, col), panelBoardSize);
 		}
 	}
 
