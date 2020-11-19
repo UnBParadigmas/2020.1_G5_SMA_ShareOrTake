@@ -33,6 +33,10 @@ public class CreatureState extends BoardItem{
 		this.alive = alive;
 	}
 	
+	public AID getId() {
+		return creatureId;
+	}
+	
 	// Gera a posicao aleatoria da criatura
 	// A criatura so deve iniciar nas bordas do board 
 	public static int[] getRandomPos(List<SpecyState> speciesState, int minPos, int maxPos) {

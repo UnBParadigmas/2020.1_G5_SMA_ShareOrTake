@@ -31,6 +31,10 @@ public class EnvironmentBoard extends Canvas {
 		this.drawGrid(g);
 		this.drawElementsGroups(g);
 	}
+	
+	public void clearBoard() {
+		this.elementsGroups.clear();
+	}
 
 	public void insertElementsGroup(BoardItemGroup elementGroup) {
 		this.elementsGroups.add(elementGroup);

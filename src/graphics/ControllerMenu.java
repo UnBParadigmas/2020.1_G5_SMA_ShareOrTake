@@ -141,10 +141,10 @@ public class ControllerMenu extends JPanel {
 		List<SpecyState> species = new ArrayList<>();
 
 		if (chckbxDove.isSelected()) {
-			species.add(new SpecyState("Dove", "/specy_1.png"));
+			species.add(new SpecyState("dove", "/specy_1.png"));
 		}
 		if (chckbxHawk.isSelected()) {
-			species.add(new SpecyState("Dove", "/specy_2.png"));
+			species.add(new SpecyState("hawk", "/specy_2.png"));
 		}
 
 		if (chckbxDove.isSelected() || chckbxHawk.isSelected()) {

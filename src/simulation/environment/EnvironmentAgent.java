@@ -12,6 +12,8 @@ import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.JADEAgentManagement.KillAgent;
+import jade.lang.acl.ACLMessage;
 import jade.wrapper.AgentController;
 import jade.wrapper.ControllerException;
 import jade.wrapper.PlatformController;
@@ -24,6 +26,8 @@ import simulation.resources.Food;
  */
 public class EnvironmentAgent extends Agent {
 	private static final long serialVersionUID = -6481631683157763680L;
+	
+	public final static String KILL = "KILL";
 
 	private MainWindow mainWindow = null;
 	
@@ -47,8 +51,23 @@ public class EnvironmentAgent extends Agent {
 	public void startSimulation(int boardSize, List<SpecyState> species, int creaturesPerSpecy, int foodAmount) {
 		this.boardSize = boardSize;
 		
+		resetState();
 		setUpFood(foodAmount);
 		setUpCreaturesAgents(species, creaturesPerSpecy);
+	}
+	
+	private void resetState() {		
+		mainWindow.clearBoard();
+		
+		for (SpecyState specy : speciesState) {
+			for (CreatureState creature : specy.getCreaturesState()) {
+				ACLMessage msg = new ACLMessage( ACLMessage.INFORM );
+				
+				msg.setContent( KILL );
+	            msg.addReceiver(creature.getId());
+	            send(msg);
+			}
+		}
 	}
 
 	private void registerInDFD() {
@@ -68,6 +87,8 @@ public class EnvironmentAgent extends Agent {
 	
 	private void setUpFood(int foodAmount) {
 		BoardItemGroup foodGroup;
+		
+		this.foodResources = new ArrayList<>();
 
 		Food.createFoodResources(this.foodResources, foodAmount, 0, boardSize - 1);
 		foodGroup = new BoardItemGroup(this.foodResources, "/food.png");
