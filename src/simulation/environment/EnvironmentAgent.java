@@ -38,6 +38,7 @@ public class EnvironmentAgent extends Agent {
 	public final static String DAY_ARAISE = "DAY_ARAISE";
 	public final static String NIGHT_FALL = "NIGHT_FALL";
 	public final static String FOOD_SEEK = "FOOD_SEEK";
+	public final static String REPRODUCE = "REPRODUCE";
 
 	private MainWindow mainWindow = null;
 
@@ -62,6 +63,7 @@ public class EnvironmentAgent extends Agent {
 
 			public void action() {
 				ACLMessage msg = receive();
+				EnvironmentAgent envAgent = (EnvironmentAgent) this.myAgent;
 
 				if (msg != null) {
 					switch (msg.getPerformative()) {
@@ -83,15 +85,16 @@ public class EnvironmentAgent extends Agent {
 						break;
 					case ACLMessage.ACCEPT_PROPOSAL:
 						try {
-							Object[] oMsg = (Object[]) msg.getContentObject();
-							CreatureState creature = new CreatureState(new AID(), (int) oMsg[1], (int) oMsg[2],
-									(String) oMsg[3]);
-							creaturePool.add(creature);
-							currentIteration -= 1;
-							if (currentIteration == 0) {
-
+							Object[] oMsg = (Object []) msg.getContentObject();
+							CreatureState creature = new CreatureState((AID) oMsg[4],
+																	   (int) oMsg[1],
+																	   (int) oMsg[2],
+																	   (String) oMsg[3]);
+							envAgent.creaturePool.add(creature);
+							envAgent.currentIteration-= 1;
+							if(envAgent.currentIteration == 0) {
+								agentFoodTime(envAgent, creaturePool);
 							}
-
 						} catch (UnreadableException e) {
 							// Nao reconheci a mensagem.
 							System.out.println("Nao consegui ler a posicao nova! (ambiente)");
@@ -246,8 +249,10 @@ public class EnvironmentAgent extends Agent {
 				int pos[] = CreatureState.getRandomPos(species, minPos, maxPos);
 
 				AgentController creatureCtl = container.createNewAgent(creatureName,
-						"simulation.creatures.CreatureAgent", new Object[] { pos[0], pos[1],
-								species.get(specyIndex).getShareStrategy()});
+						"simulation.creatures.CreatureAgent",
+						new Object[] { pos[0], 
+									   pos[1], 
+									   species.get(specyIndex).getShareStrategy(),});
 				creatureCtl.start();
 
 				species.get(specyIndex).addCreatureState(new CreatureState(new AID(creatureName, AID.ISLOCALNAME),
@@ -308,5 +313,98 @@ public class EnvironmentAgent extends Agent {
 			}
 		}
 		return false;
+	}
+	
+	private void compareStrategies(EnvironmentAgent envAgent, CreatureState creature1, CreatureState creature2) {
+		String strat1 = creature1.getShareStrategy();
+		String strat2 = creature2.getShareStrategy();
+		
+		// Strat1 and strat2 are equal
+		if(strat1.equals(strat2)) {
+			switch (strat1) {
+				case CreatureState.FRIENDLY:
+					agentGoBack(envAgent, creature1);
+					agentGoBack(envAgent, creature2);
+					break;
+				case CreatureState.AGGRESSIVE:
+					agentKill(envAgent, creature1);
+					agentKill(envAgent, creature2);
+					break;
+				default:
+					
+			}
+		} else { // Strat 1 and strat2 are not equal
+			switch (strat1) {
+				case CreatureState.FRIENDLY:
+					agentChanceSurvive(envAgent, creature1, 0.5);
+					agentChanceReproduce(envAgent, creature2, 0.5);
+					break;
+				case CreatureState.AGGRESSIVE:
+					agentChanceSurvive(envAgent, creature2, 0.5);
+					agentChanceReproduce(envAgent, creature1, 0.5);
+					break;
+				default:
+					
+			}
+		}
+	}
+	
+	// Handles what happens after all creatures have moved to eat.
+	private void agentFoodTime(EnvironmentAgent envAgent, List<CreatureState> creaturePool) {
+		int total = envAgent.totalIterations;
+		for(int i = 0; i < total; i++) {
+			for(int j = i+1; j < total; i++) {
+				if(checkDuplicates(creaturePool.get(i), creaturePool.get(j))) {
+					compareStrategies(envAgent, creaturePool.get(i), creaturePool.get(j));
+				}else if(j == (total-1)) {
+					agentGoBack(envAgent, creaturePool.get(i));
+				}
+			}
+		}
+		creaturePool.clear();
+		envAgent.currentIteration = envAgent.totalIterations;
+	}
+	
+	private void agentGoBack(EnvironmentAgent envAgent, CreatureState creature) {
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		msg.addReceiver(creature.getId());
+		msg.setSender(envAgent.getAID());
+		msg.setContent(EnvironmentAgent.GOBACK);
+		send(msg);
+	}
+	
+	private void agentKill(EnvironmentAgent envAgent, CreatureState creature) {
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		msg.addReceiver(creature.getId());
+		msg.setSender(envAgent.getAID());
+		msg.setContent(EnvironmentAgent.DEAD);
+		envAgent.totalIterations-=1;
+		send(msg);
+	}
+	
+	private void agentChanceReproduce(EnvironmentAgent envAgent, CreatureState creature, double chance) {
+		if(Math.random() < chance) {
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+			msg.addReceiver(creature.getId());
+			msg.setSender(envAgent.getAID());
+			msg.setContent(EnvironmentAgent.REPRODUCE);
+			envAgent.totalIterations+=1;
+			send(msg);
+		} else {
+			agentGoBack(envAgent, creature);
+		}
+	}
+	
+	private void agentChanceSurvive(EnvironmentAgent envAgent, CreatureState creature, double chance) {
+		if(Math.random() < chance) {
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+			msg.addReceiver(creature.getId());
+			msg.setSender(envAgent.getAID());
+			msg.setContent(EnvironmentAgent.DEAD);
+			envAgent.totalIterations-=1;
+			send(msg);
+		} else {
+			agentGoBack(envAgent, creature);
+		}
 	}
 }

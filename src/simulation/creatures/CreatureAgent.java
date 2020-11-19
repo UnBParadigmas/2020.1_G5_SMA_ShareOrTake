@@ -28,6 +28,8 @@ public class CreatureAgent extends Agent {
 	
 	private int xPos;
 	private int yPos;
+	private int xPosOld;
+	private int yPosOld;
 	private int initialXPos;
 	private int initialYPos;
 	private boolean alive;
@@ -50,19 +52,13 @@ public class CreatureAgent extends Agent {
 		
 			this.registerInDFD();
 		
-			// Notificar board que a criatura esta aqui
-//			ACLMessage hello = new ACLMessage(ACLMessage.INFORM);
-//			hello.setContent(EnvironmentAgent.HELLO);
-//			hello.addReceiver(new AID("environment", AID.ISLOCALNAME));
-//			send(hello);
-			
 			// Adicionar behaviour para mover quando chamado
 			addBehaviour(new CyclicBehaviour(this){
 				private static final long serialVersionUID = 1L;
 
 				public void action() {
 					ACLMessage msg = receive();
-					CreatureAgent a = (CreatureAgent) myAgent;
+					CreatureAgent ctrAgent = (CreatureAgent) myAgent;
 					if (msg != null) {
 						
 						switch (msg.getPerformative()) {
@@ -77,28 +73,12 @@ public class CreatureAgent extends Agent {
 										// Informacao de que esta de dia, a criatura deve voltar para casa
 										System.out.println(getLocalName() + " voltou para casa");
 										break;
-									case EnvironmentAgent.SHARE:
-										ACLMessage share = new ACLMessage(ACLMessage.PROPOSE);
-										share.setSender(a.getAID());
-									     try {
-									         Object[] oMsg = new Object[4];
-									         oMsg[0] = a.alive;
-									         oMsg[1] = a.xPos;
-									         oMsg[2] = a.yPos;
-									         oMsg[3] = a.shareStrategy;
-									         
-									         share.setContentObject(oMsg);
-									     } catch (IOException ex) {
-									         System.err.println("Nao consegui reconhecer mensagem. Mandando mensagem vazia.");
-									         ex.printStackTrace(System.err);
-									     }
-									    share.addReceiver(msg.getSender());
-										send(share);
-										break;
 									case EnvironmentAgent.DEAD:
 										kill();
 										doDelete();
 										break;
+									case EnvironmentAgent.REPRODUCE:
+										doReproduceRequest(ctrAgent, msg);
 									default:
 										System.out.println("Mensagem inesperada (creature).");
 								}	
@@ -106,36 +86,10 @@ public class CreatureAgent extends Agent {
 								break;
 								
 							case ACLMessage.PROPOSE:
-								try {
-									Object[] oMsg = (Object []) msg.getContentObject();
-									a.xPos = (int) oMsg[1];
-									a.yPos = (int) oMsg[2];
-
-									System.out.println(getLocalName() + " Nova posicao X: " + a.xPos + " Y: " + a.yPos);
-									System.out.println(getLocalName() + " Comida disponivel: "+ oMsg[0]);
-								} catch (UnreadableException e) {
-									// Nao reconheci a mensagem.
-									System.out.println("N�o consegui ler a posi��o nova!");
-									e.printStackTrace();
-								}
+								doChangeCoords(ctrAgent, msg);
 								break;
 							case ACLMessage.ACCEPT_PROPOSAL:
-								ACLMessage share = new ACLMessage(ACLMessage.PROPOSE);
-								share.setSender(a.getAID());
-							     try {
-							         Object[] oMsg = new Object[4];
-							         oMsg[0] = a.alive;
-							         oMsg[1] = a.xPos;
-							         oMsg[2] = a.yPos;
-							         oMsg[3] = a.shareStrategy;
-							         
-							         share.setContentObject(oMsg);
-							     } catch (IOException ex) {
-							         System.err.println("Nao consegui reconhecer mensagem. Mandando mensagem vazia.");
-							         ex.printStackTrace(System.err);
-							     }
-							    share.addReceiver(msg.getSender());
-								send(share);
+								doSendInfo(ctrAgent, msg);
 								break;
 							default:
 								System.out.println("Mensagem no formato inesperado. (creature");
@@ -188,5 +142,50 @@ public class CreatureAgent extends Agent {
 	
 	public void kill() {
 		this.alive = false;
+	}
+	
+	private void doChangeCoords(CreatureAgent ctrAgent, ACLMessage msg) {
+		try {
+			Object[] oMsg = (Object []) msg.getContentObject();
+			ctrAgent.xPosOld = ctrAgent.xPos;
+			ctrAgent.yPosOld = ctrAgent.yPos;
+			ctrAgent.xPos = (int) oMsg[1];
+			ctrAgent.yPos = (int) oMsg[2];
+			
+			System.out.println("Nova posicao X: " + ctrAgent.xPos + " Nova posicao Y: " + ctrAgent.yPos);
+ 
+		} catch (UnreadableException e) {
+			// Nao reconheci a mensagem.
+			System.out.println("N�o consegui ler a posi��o nova!");
+			e.printStackTrace();
+		}
+	}
+	
+	private void doSendInfo(CreatureAgent ctrAgent, ACLMessage msg) {
+		ACLMessage share = new ACLMessage(ACLMessage.PROPOSE);
+		share.setSender(ctrAgent.getAID());
+	     try {
+	         Object[] oMsg = new Object[5];
+	         oMsg[0] = ctrAgent.alive;
+	         oMsg[1] = ctrAgent.xPos;
+	         oMsg[2] = ctrAgent.yPos;
+	         oMsg[3] = ctrAgent.shareStrategy;
+	         oMsg[4] = ctrAgent.getAID();
+	         
+	         share.setContentObject(oMsg);
+	     } catch (IOException ex) {
+	         System.err.println("Nao consegui reconhecer mensagem. Mandando mensagem vazia.");
+	         ex.printStackTrace(System.err);
+	     }
+	    share.addReceiver(msg.getSender());
+		send(share);
+	}
+	
+	private void doReproduceRequest(CreatureAgent ctrAgent, ACLMessage origin) {
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		msg.addReceiver(origin.getSender());
+		msg.setSender(ctrAgent.getAID());
+		msg.setContent(EnvironmentAgent.REPRODUCE);
+		send(msg);
 	}
 }
