@@ -3,6 +3,7 @@ package simulation.creatures;
 import jade.core.Agent;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import jade.core.AID;
 import jade.core.behaviours.CyclicBehaviour;
@@ -13,7 +14,7 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
-
+import jade.lang.acl.UnreadableException;
 import simulation.environment.*;
 
 /**
@@ -55,48 +56,62 @@ public class CreatureAgent extends Agent {
 				private static final long serialVersionUID = 1L;
 
 				public void action() {
-					ACLMessage msg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-					
+					ACLMessage msg = receive();
+					CreatureAgent a = (CreatureAgent) myAgent;
 					if (msg != null) {
-						CreatureAgent a = (CreatureAgent) myAgent;
 						
-						switch (msg.getContent()) {
-							case EnvironmentAgent.MOVE:
-								// Move here
+						switch (msg.getPerformative()) {
+							case ACLMessage.INFORM:
+								
+								switch (msg.getContent()) {
+									case EnvironmentAgent.SHARE:
+										ACLMessage share = new ACLMessage(ACLMessage.PROPOSE);
+										share.setSender(a.getAID());
+									     try {
+									         Object[] oMsg = new Object[4];
+									         oMsg[0] = a.alive;
+									         oMsg[1] = a.xPos;
+									         oMsg[2] = a.yPos;
+									         oMsg[3] = a.shareStrategy;
+									         
+									         share.setContentObject(oMsg);
+									     } catch (IOException ex) {
+									         System.err.println("Não consegui reconhecer mensagem. Mandando mensagem vazia.");
+									         ex.printStackTrace(System.err);
+									     }
+									    share.addReceiver(msg.getSender());
+										send(share);
+										break;
+									case EnvironmentAgent.DEAD:
+										kill();
+										ACLMessage dead = new ACLMessage(ACLMessage.INFORM);
+										dead.setContent(EnvironmentAgent.DEAD);
+										dead.setSender(a.getAID());
+										dead.addReceiver(msg.getSender());
+										send(dead);
+										takeDown();
+										break;
+									default:
+										System.out.println("Mensagem inesperada.");
+								}	
+								
 								break;
-							case EnvironmentAgent.GOBACK:
-								// Go back here
+								
+							case ACLMessage.PROPOSE:
+								try {
+									Object[] oMsg = (Object []) msg.getContentObject();
+									a.xPos = (int) oMsg[1];
+									a.yPos = (int) oMsg[2];
+									System.out.println("Nova posição X: " + a.xPos + " Nova posição Y: " + a.yPos);
+									System.out.println("Comida disponível: "+ oMsg[0]);
+									 
+								} catch (UnreadableException e) {
+									// Não reconheci a mensagem.
+									e.printStackTrace();
+								}
 								break;
-							case EnvironmentAgent.SHARE:
-								ACLMessage share = new ACLMessage(ACLMessage.PROPOSE);
-								share.setSender(a.getAID());
-							     try {
-							         Object[] oMsg = new Object[4];
-							         oMsg[0] = a.alive;
-							         oMsg[1] = a.xPos;
-							         oMsg[2] = a.yPos;
-							         oMsg[3] = a.shareStrategy;
-							         
-							         share.setContentObject(oMsg);
-							     } catch (IOException ex) {
-							         System.err.println("Não consegui reconhecer mensagem. Mandando mensagem vazia.");
-							         ex.printStackTrace(System.err);
-							     }
-							    share.addReceiver(msg.getSender());
-								send(share);
-								break;
-							case EnvironmentAgent.DEAD:
-								kill();
-								ACLMessage dead = new ACLMessage(ACLMessage.INFORM);
-								dead.setContent(EnvironmentAgent.DEAD);
-								dead.setSender(a.getAID());
-								dead.addReceiver(msg.getSender());
-								send(dead);
-								takeDown();
-								break;
-							default:
-								System.out.println("Mensagem inesperada.");
 						}
+								
 					} else {
 						// Se não houver mensagem, bloquear behaviour.
 						block();

@@ -1,6 +1,7 @@
 package simulation.environment;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -15,6 +16,7 @@ import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.lang.acl.UnreadableException;
 import jade.wrapper.AgentController;
 import jade.wrapper.ControllerException;
 import jade.wrapper.PlatformController;
@@ -53,49 +55,50 @@ public class EnvironmentAgent extends Agent {
 			static final long serialVersionUID = 1L;
 
 			public void action() {
-				ACLMessage msg = receive(MessageTemplate.MatchPerformative(ACLMessage.INFORM));
-				ACLMessage rqst = receive(MessageTemplate.MatchPerformative(ACLMessage.REQUEST));
+				ACLMessage msg = receive();
 				EnvironmentAgent a = (EnvironmentAgent) myAgent;
-				if(msg != null) {	
-					switch (msg.getContent()) {
-						case EnvironmentAgent.HELLO:
-							// Hello
-							System.out.println("Amigo estou aqui");
-							ACLMessage move = new ACLMessage(ACLMessage.INFORM);
-							move.setContent(EnvironmentAgent.MOVE);
-							move.setSender(a.getAID());
-							move.addReceiver(msg.getSender());
-						case EnvironmentAgent.SHARE: 
+				
+				if (msg != null) {
+					switch (msg.getPerformative()) {
+						case ACLMessage.INFORM:
+							
+							switch (msg.getContent()) {
+								case EnvironmentAgent.HELLO:
+									// Hello
+									System.out.println("Amigo estou aqui");
+									if(a.randomFood == null) {
+										a.randomFood = randomElementOneRepeat(a.foodResources);
+									}
+									Food newCoords = a.randomFood.get(0);
+									a.randomFood.remove(0);
+									ACLMessage coords = new ACLMessage(ACLMessage.PROPOSE);
+									coords.setSender(a.getAID());
+									coords.addReceiver(msg.getSender());
+									try {
+									     Object[] oMsg = new Object[3];
+									     oMsg[0] = newCoords.getFoodAmount();
+									     oMsg[1] = newCoords.getXPos();
+									     oMsg[2] = newCoords.getYPos();
+									     
+									     coords.setContentObject(oMsg);
+									 } catch (IOException ex) {
+									     System.err.println("Não consegui reconhecer mensagem. Mandando mensagem vazia.");
+									     ex.printStackTrace(System.err);
+									 }	
+									send(coords);
+								default:
+									System.out.println("Mensagem inesperada.");
+							}
+							
+							break;
+						case ACLMessage.ACCEPT_PROPOSAL:							
 							break;
 						default:
-							System.out.println("Mensagem inesperada.");
+							break;
 					}
 				} else {
-					if(rqst != null) {
-						if(a.randomFood == null) {
-							a.randomFood = randomElementOneRepeat(a.foodResources);
-						}
-						Food newCoords = a.randomFood.get(0);
-						a.randomFood.remove(0);
-						ACLMessage coords = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
-						coords.setSender(a.getAID());
-						coords.addReceiver(rqst.getSender());
-						try {
-					         Object[] oMsg = new Object[3];
-					         oMsg[0] = newCoords.getFoodAmount();
-					         oMsg[1] = newCoords.getXPos();
-					         oMsg[2] = newCoords.getYPos();
-					         
-					         coords.setContentObject(oMsg);
-					     } catch (IOException ex) {
-					         System.err.println("Não consegui reconhecer mensagem. Mandando mensagem vazia.");
-					         ex.printStackTrace(System.err);
-					     }	
-						send(coords);
-					} else {
-						// Se não houver mensagem nem request, bloquear behaviour.
-						block();
-					}
+					// Bloquear caso mensagem for nula.
+					block();
 				}
 			}
 		});
@@ -176,7 +179,7 @@ public class EnvironmentAgent extends Agent {
 	    Random rand = new Random();
 	    List<Food> randomSequence = new ArrayList<>();
 	 	int numberOfElements = foods.size();
-	 	boolean repeat [] = null;
+	 	Boolean repeat [] = new Boolean[numberOfElements];
 	 	
 	    for (int i = 0; i < numberOfElements; i++) {
 	        int randomIndex = rand.nextInt(foodCopy.size());
