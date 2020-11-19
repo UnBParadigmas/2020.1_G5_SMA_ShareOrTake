@@ -34,6 +34,7 @@ public class EnvironmentAgent extends Agent {
 	public final static String GOBACK = "GOBACK";
 	public final static String DEAD = "DEAD";
 	public final static String MOVE = "MOVE";
+	public final static String REPRODUCE = "REPRODUCE";
 
 	private MainWindow mainWindow = null;
 
@@ -96,14 +97,20 @@ public class EnvironmentAgent extends Agent {
 					case ACLMessage.ACCEPT_PROPOSAL:
 						try {
 							Object[] oMsg = (Object []) msg.getContentObject();
-							CreatureState creature = new CreatureState(new AID(),
+							CreatureState creature = new CreatureState((AID) oMsg[4],
 																	   (int) oMsg[1],
 																	   (int) oMsg[2],
 																	   (String) oMsg[3]);
 							envAgent.creaturePool.add(creature);
 							envAgent.currentIteration-= 1;
 							if(envAgent.currentIteration == 0) {
-								
+								for(int i = 0; i < envAgent.totalIterations; i++) {
+									for(int j = i+1; j < envAgent.totalIterations; i++) {
+										if(checkDuplicates(creaturePool.get(i), creaturePool.get(j))) {
+											compareStrategies(envAgent, creaturePool.get(i), creaturePool.get(j));
+										}
+									}
+								}
 							}
 				 
 						} catch (UnreadableException e) {
@@ -209,8 +216,7 @@ public class EnvironmentAgent extends Agent {
 						"simulation.creatures.CreatureAgent",
 						new Object[] { pos[0], 
 									   pos[1], 
-									   species.get(specyIndex).getShareStrategy(),
-									   new AID(creatureName, AID.ISLOCALNAME)});
+									   species.get(specyIndex).getShareStrategy(),});
 				creatureCtl.start();
 
 				species.get(specyIndex).addCreatureState(new CreatureState(new AID(creatureName, AID.ISLOCALNAME),
@@ -247,5 +253,79 @@ public class EnvironmentAgent extends Agent {
 			}
 		}
 		return false;
+	}
+	
+	private void compareStrategies(EnvironmentAgent envAgent, CreatureState creature1, CreatureState creature2) {
+		String strat1 = creature1.getShareStrategy();
+		String strat2 = creature2.getShareStrategy();
+		
+		// Strat1 and strat2 are equal
+		if(strat1.equals(strat2)) {
+			switch (strat1) {
+				case CreatureState.FRIENDLY:
+					agentGoBack(envAgent, creature1);
+					agentGoBack(envAgent, creature2);
+					break;
+				case CreatureState.AGGRESSIVE:
+					agentKill(envAgent, creature1);
+					agentKill(envAgent, creature2);
+					break;
+				default:
+					
+			}
+		} else { // Strat 1 and strat2 are not equal
+			switch (strat1) {
+				case CreatureState.FRIENDLY:
+					agentChanceSurvive(envAgent, creature1, 0.5);
+					agentChanceReproduce(envAgent, creature2, 0.5);
+					break;
+				case CreatureState.AGGRESSIVE:
+					agentChanceSurvive(envAgent, creature2, 0.5);
+					agentChanceReproduce(envAgent, creature1, 0.5);
+					break;
+				default:
+					
+			}
+		}
+	}
+	
+	private void agentGoBack(EnvironmentAgent envAgent, CreatureState creature) {
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		msg.addReceiver(creature.getId());
+		msg.setSender(envAgent.getAID());
+		msg.setContent(EnvironmentAgent.GOBACK);
+		send(msg);
+	}
+	
+	private void agentKill(EnvironmentAgent envAgent, CreatureState creature) {
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		msg.addReceiver(creature.getId());
+		msg.setSender(envAgent.getAID());
+		msg.setContent(EnvironmentAgent.DEAD);
+		send(msg);
+	}
+	
+	private void agentChanceReproduce(EnvironmentAgent envAgent, CreatureState creature, double chance) {
+		if(Math.random() < chance) {
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+			msg.addReceiver(creature.getId());
+			msg.setSender(envAgent.getAID());
+			msg.setContent(EnvironmentAgent.REPRODUCE);
+			send(msg);
+		} else {
+			agentGoBack(envAgent, creature);
+		}
+	}
+	
+	private void agentChanceSurvive(EnvironmentAgent envAgent, CreatureState creature, double chance) {
+		if(Math.random() < chance) {
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+			msg.addReceiver(creature.getId());
+			msg.setSender(envAgent.getAID());
+			msg.setContent(EnvironmentAgent.DEAD);
+			send(msg);
+		} else {
+			agentGoBack(envAgent, creature);
+		}
 	}
 }

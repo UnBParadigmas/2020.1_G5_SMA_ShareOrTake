@@ -26,7 +26,6 @@ public class CreatureAgent extends Agent {
     public final static String AGGRESSIVE = "AGGRESIVE";
 	private static final long serialVersionUID = 5935364544929084407L;
 	
-	private AID creatureId;
 	private int xPos;
 	private int yPos;
 	private int xPosOld;
@@ -40,7 +39,6 @@ public class CreatureAgent extends Agent {
 			this.xPos = (int) this.getArguments()[0];
 			this.yPos = (int) this.getArguments()[1];
 			this.shareStrategy  = (String) this.getArguments()[2];
-			this.creatureId = (AID) this.getArguments()[3];
 			this.alive = true;
 			
 			System.out.println("Criando criatura " + getLocalName());
@@ -101,11 +99,12 @@ public class CreatureAgent extends Agent {
 								ACLMessage share = new ACLMessage(ACLMessage.PROPOSE);
 								share.setSender(a.getAID());
 							     try {
-							         Object[] oMsg = new Object[4];
+							         Object[] oMsg = new Object[5];
 							         oMsg[0] = a.alive;
 							         oMsg[1] = a.xPos;
 							         oMsg[2] = a.yPos;
 							         oMsg[3] = a.shareStrategy;
+							         oMsg[4] = a.getAID();
 							         
 							         share.setContentObject(oMsg);
 							     } catch (IOException ex) {

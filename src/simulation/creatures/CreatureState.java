@@ -40,8 +40,13 @@ public class CreatureState extends BoardItem{
 	public AID getId() {
 		return creatureId;
 	}
+	
 	public void setShareStrategy(String shareStrategy) {
 		this.shareStrategy = shareStrategy;
+	}
+	
+	public String getShareStrategy() {
+		return this.shareStrategy;
 	}
 	
 	// Gera a posicao aleatoria da criatura
