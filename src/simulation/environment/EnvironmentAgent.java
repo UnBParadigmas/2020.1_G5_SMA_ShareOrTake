@@ -44,6 +44,9 @@ public class EnvironmentAgent extends Agent {
 	public final static String NIGHT_FALL = "NIGHT_FALL";
 	public final static String FOOD_SEEK = "FOOD_SEEK";
 	public final static String REPRODUCE = "REPRODUCE";
+	
+	public final static String DOVE_NAME = "dove";
+	public final static String HAWK_NAME = "hawk";
 
 	private final static Map<String, String> SPECIES_IMAGE_PATH = new HashMap<String, String>();
 	static {
@@ -58,6 +61,11 @@ public class EnvironmentAgent extends Agent {
 	int boardSize = 0;
 	int maxOfBorderFreeSpaces = 0; // Espacos disponiveis nas bordas do board para novas criaturas
 	int foodAmount = 0;
+	
+	public Integer daysCount = 0;
+	public Integer dovesCount = 0;
+	public Integer hawksCount = 0;
+	public boolean running = false;
 
 	private List<Food> foodResources = new ArrayList<>();
 	private List<Food> randomFood = new ArrayList<>();
@@ -119,10 +127,6 @@ public class EnvironmentAgent extends Agent {
 		});
 	}
 
-	@Override
-	protected void takeDown() {
-	}
-
 	// Comportamento de Controle Temporal (Passagem dos dias)
 	class IncrementDaysBehaviour extends Behaviour {
 
@@ -130,7 +134,6 @@ public class EnvironmentAgent extends Agent {
 
 		// Se altera em dia e noite
 		private boolean isDay = false;
-		private int daysCount = 0;
 
 		long delay;
 
@@ -147,12 +150,16 @@ public class EnvironmentAgent extends Agent {
 			}
 
 			isDay = !isDay;
-			if (isDay) {
+			if (isDay) {			
 				daysCount++;
 				setUpFood(foodAmount);
 				dayAlert();
 			} else {
 				nightAlert();
+			}
+			computeCreaturesCount();
+			if (creaturesState.isEmpty()) {
+				stopSimulation();
 			}
 		}
 
@@ -160,7 +167,18 @@ public class EnvironmentAgent extends Agent {
 			System.out.println((isDay ? "DIA " : "NOITE ") + daysCount);
 			return false;
 		}
+	}
+	
+	private void computeCreaturesCount() {
+		this.dovesCount = 0;
+		this.hawksCount = 0;
 
+		for (CreatureState creature : this.creaturesState) {
+			if (creature.getSpeciesName().equals(DOVE_NAME))
+				this.dovesCount++;
+			else if (creature.getSpeciesName().equals(HAWK_NAME))
+				this.hawksCount++;
+		}
 	}
 
 	// Alerta para todas as criaturas informando que esta de dia
@@ -175,18 +193,19 @@ public class EnvironmentAgent extends Agent {
 		sendBroadCast(ACLMessage.INFORM, NIGHT_FALL);
 	}
 
-	public void startSimulation(int boardSize, List<SpeciesState> speciesList, int creaturesPerSpecies, int foodAmount) {
+	public void startSimulation(int boardSize, List<SpeciesState> speciesList, int foodAmount) {
 		this.boardSize = boardSize;
 		this.maxOfBorderFreeSpaces = boardSize * 4 - 4;
 		this.foodAmount = foodAmount;
 
 		System.out.println("---------- INICIANDO SIMULACAO ----------");
 		setUpFood(foodAmount);
-		setUpCreaturesAgents(speciesList, creaturesPerSpecies);
+		setUpCreaturesAgents(speciesList);
 
 		System.out.println("Inicia rotina de controle temporal (passagem dos dias)");
 		Behaviour incDayBehaviour = new IncrementDaysBehaviour(this, 1000);
 		addBehaviour(incDayThread.wrap(incDayBehaviour));
+		this.running = true;
 	}
 
 	public void stopSimulation() {
@@ -194,6 +213,7 @@ public class EnvironmentAgent extends Agent {
 		sendBroadCast(ACLMessage.INFORM, DEAD);
 		incDayThread.interrupt();
 		mainWindow.clearBoard();
+		this.running = false;
 	}
 
 	// Envia a mesma mensagem a todas as criaturas
@@ -240,15 +260,16 @@ public class EnvironmentAgent extends Agent {
 		return null;
 	}
 
-	private void setUpCreaturesAgents(List<SpeciesState> speciesList, int creaturesPerSpecies) {
+	private void setUpCreaturesAgents(List<SpeciesState> speciesList) {
 
 		availableIndexOfSpeciesName.clear();
 		for (int i = 0; i < speciesList.size(); i++) {
 			Image speciesImage = getImage(SPECIES_IMAGE_PATH.get(speciesList.get(i).getName()));
 			availableIndexOfSpeciesName.put(speciesList.get(i).getName(), 0);
 
-			this.creaturesState.addAll(createCreatureAgents(speciesList.get(i).getName(),
-					speciesList.get(i).getShareStrategy(), speciesImage, creaturesPerSpecies, 0, boardSize - 1));
+			this.creaturesState
+					.addAll(createCreatureAgents(speciesList.get(i).getName(), speciesList.get(i).getShareStrategy(),
+							speciesImage, speciesList.get(i).getCreaturesAmount(), 0, boardSize - 1));
 		}
 
 		mainWindow.insertSpecies(this.creaturesState);
@@ -284,34 +305,34 @@ public class EnvironmentAgent extends Agent {
 
 		return creaturesList;
 	}
-	
+
 	private Food getRandomFood(List<Food> foodList) {
 		Food choosedFood = null;
 		// se nao tiver comida disponivel, retorna null
-		if (!foodList.isEmpty()) {			
+		if (!foodList.isEmpty()) {
 			int foodIndex = (int) (Math.random() * foodList.size());
 			boolean alreadyChoosed = foodList.get(foodIndex).alreadyChoosed();
-			
+
 			choosedFood = foodList.get(foodIndex);
 			foodList.get(foodIndex).choose();
-			
+
 			if (alreadyChoosed) {
 				foodList.remove(foodIndex);
 			}
 		}
-		
+
 		return choosedFood;
 	}
 
 	private void fulfillFoodSeekRequest(EnvironmentAgent envAgent, ACLMessage msg) {
 		System.out.println(msg.getSender().getLocalName() + " requisita comida");
 		Food choosedFood = getRandomFood(randomFood);
-		
+
 		if (choosedFood == null) {
 			agentKill(envAgent, msg.getSender());
 			return;
 		}
-		
+
 		ACLMessage coordsMsg = new ACLMessage(ACLMessage.PROPOSE);
 		coordsMsg.setSender(getAID());
 		coordsMsg.addReceiver(msg.getSender());
@@ -327,14 +348,13 @@ public class EnvironmentAgent extends Agent {
 		}
 		send(coordsMsg);
 	}
-	
+
 	private void creatureGoback(ACLMessage msg, EnvironmentAgent envAgent) {
 		String msgParts[] = msg.getContent().split(",");
 
 		msg.getSender().getLocalName();
 
-		moveCreature(envAgent, msg.getSender(), Integer.parseInt(msgParts[1]),
-				Integer.parseInt(msgParts[2]));
+		moveCreature(envAgent, msg.getSender(), Integer.parseInt(msgParts[1]), Integer.parseInt(msgParts[2]));
 	}
 
 	private void moveCreature(EnvironmentAgent envAgent, AID creatureId, int xPos, int yPos) {
@@ -386,12 +406,12 @@ public class EnvironmentAgent extends Agent {
 			}
 		}
 	}
-	
+
 	private void creatureMoveToFood(ACLMessage msg, EnvironmentAgent envAgent) {
 		try {
 			Object[] oMsg = (Object[]) msg.getContentObject();
-			CreatureState creature = new CreatureState((AID) oMsg[3], null, (int) oMsg[0],
-					(int) oMsg[1], (String) oMsg[2], null);
+			CreatureState creature = new CreatureState((AID) oMsg[3], null, (int) oMsg[0], (int) oMsg[1],
+					(String) oMsg[2], null);
 
 			envAgent.creaturePool.add(creature);
 
@@ -436,7 +456,7 @@ public class EnvironmentAgent extends Agent {
 		for (int i = 0; i < this.creaturesState.size(); i++) {
 			if (this.creaturesState.get(i).getId().equals(creatureId)) {
 				this.creaturesState.remove(i);
-				
+
 			}
 		}
 	}

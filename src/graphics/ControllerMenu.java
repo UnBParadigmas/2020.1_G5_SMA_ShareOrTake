@@ -16,41 +16,50 @@ import simulation.creatures.SpeciesState;
 import simulation.environment.EnvironmentAgent;
 
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Color;
 import javax.swing.JButton;
 import javax.swing.JSeparator;
 import javax.swing.JSlider;
-import javax.swing.JCheckBox;
 import javax.swing.JSpinner;
-import javax.swing.SpinnerNumberModel;
 
 public class ControllerMenu extends JPanel {
 	private static final long serialVersionUID = 1525206838913953208L;
 
 	JLabel lblTitle = new JLabel("Share or Take?");
 	JButton btnStart = new JButton("Iniciar");
-	JPanel panelSlider = new JPanel();
-	JSlider sliderVelocity = new JSlider();
 	JLabel lblVelocity = new JLabel("Velocidade");
 	JLabel lblSliderVelocity = new JLabel();
-	private final JLabel lblSpecies = new JLabel("Espécies:");
-	private final JCheckBox chckbxDove = new JCheckBox("Dove (Amigavel)");
-	private final JCheckBox chckbxHawk = new JCheckBox("Hawk (Agressivo)");
-	private final JSpinner spinnerCreaturesAmount = new JSpinner();
-	private final JLabel lblCreaturesAmount = new JLabel("Quantidade de criaturas:");
-	private final JSpinner spinnerFoodAmount = new JSpinner();
-	private final JLabel lblFoodAmount = new JLabel("Quantidade de comida:");
+	JLabel lblSpecies = new JLabel("Espécies:");
+	JLabel lblDovesAmount = new JLabel("Qtd de Doves (Amigavel):");
+	JSpinner spinnerDovesAmount = new JSpinner();
+	JLabel lblHawksAmount = new JLabel("Qtd de Hawks (Agressivo):");
+	JSpinner spinnerHawksAmount = new JSpinner();
+	JSpinner spinnerFoodAmount = new JSpinner();
+	JLabel lblFoodAmount = new JLabel("Quantidade de comida:");
+	JLabel lblDays = new JLabel("Dia:");
+	JLabel lblDaysCount = new JLabel("0");
+	JLabel lblDovesCount = new JLabel("0");
+	JLabel lblDoves = new JLabel("Doves:");
+	JLabel lblHawks = new JLabel("Hawks:");
+	JLabel lblHawksCount = new JLabel("0");
+	JPanel panelSliderVelocity = new JPanel();
+	JSlider sliderVelocity = new JSlider();
+	JPanel panelSliderEnd = new JPanel();
+	JLabel lblEnd = new JLabel("FIM");
+	JLabel lblRestart = new JLabel("Reinicie a simulacao");
 
 	private EnvironmentAgent environment;
 	private int boardSize = 0;
 	private boolean simulationRunning = false;
+	private boolean alreadyStarted = false;
 
 	public ControllerMenu(EnvironmentAgent environment, int boardSize) {
 		this.environment = environment;
 		this.boardSize = boardSize;
 
 		setBackground(new Color(0, 128, 128));
-		setBounds(100, 100, 237, 494);
+		setBounds(100, 100, 237, 665);
 		setLayout(null);
 
 		lblTitle.setBounds(12, 12, 212, 45);
@@ -64,28 +73,26 @@ public class ControllerMenu extends JPanel {
 		separator_1.setBounds(0, 69, 237, 2);
 		add(separator_1);
 
-		chckbxDove.setForeground(new Color(47, 79, 79));
-		chckbxDove.setBackground(new Color(0, 128, 128));
-		chckbxDove.setBounds(12, 119, 212, 23);
-		add(chckbxDove);
+		lblDovesAmount.setForeground(Color.WHITE);
+		lblDovesAmount.setBounds(12, 113, 212, 15);
+		add(lblDovesAmount);
 
-		chckbxHawk.setForeground(new Color(47, 79, 79));
-		chckbxHawk.setBackground(new Color(0, 128, 128));
-		chckbxHawk.setBounds(12, 146, 212, 23);
-		add(chckbxHawk);
+		spinnerDovesAmount.setBounds(12, 138, 69, 20);
+		spinnerDovesAmount.setValue(0);
+		add(spinnerDovesAmount);
 
-		lblCreaturesAmount.setForeground(Color.WHITE);
-		lblCreaturesAmount.setBounds(12, 188, 212, 15);
-		add(lblCreaturesAmount);
+		lblHawksAmount.setForeground(Color.WHITE);
+		lblHawksAmount.setBounds(12, 170, 212, 15);
+		add(lblHawksAmount);
 
-		spinnerCreaturesAmount.setBounds(12, 213, 69, 20);
-		add(spinnerCreaturesAmount);
-		spinnerCreaturesAmount.setValue(1);
+		spinnerHawksAmount.setBounds(12, 195, 69, 20);
+		spinnerHawksAmount.setValue(0);
+		add(spinnerHawksAmount);
 
 		lblFoodAmount.setForeground(Color.WHITE);
-		lblFoodAmount.setBounds(12, 256, 212, 15);
+		lblFoodAmount.setBounds(12, 227, 212, 15);
 		add(lblFoodAmount);
-		spinnerFoodAmount.setBounds(12, 281, 69, 20);
+		spinnerFoodAmount.setBounds(12, 252, 69, 20);
 		spinnerFoodAmount.setValue(1);
 		add(spinnerFoodAmount);
 
@@ -108,17 +115,53 @@ public class ControllerMenu extends JPanel {
 		separator_2.setBounds(0, 365, 237, 2);
 		add(separator_2);
 
-		panelSlider.setBackground(new Color(0, 128, 128));
-		panelSlider.setBounds(0, 379, 237, 80);
-		panelSlider.setLayout(null);
-		add(panelSlider);
+		JPanel panelSliderDays = new JPanel();
+		panelSliderDays.setLayout(null);
+		panelSliderDays.setBackground(new Color(0, 128, 128));
+		panelSliderDays.setBounds(0, 373, 237, 80);
+		add(panelSliderDays);
+		lblDays.setFont(new Font("Dialog", Font.BOLD, 12));
+
+		lblDays.setForeground(Color.WHITE);
+		lblDays.setBounds(12, 12, 57, 15);
+		panelSliderDays.add(lblDays);
+
+		lblDaysCount.setFont(new Font("Dialog", Font.BOLD, 12));
+		lblDaysCount.setForeground(Color.WHITE);
+		lblDaysCount.setBounds(81, 12, 57, 15);
+		panelSliderDays.add(lblDaysCount);
+
+		lblDoves.setForeground(Color.WHITE);
+		lblDoves.setFont(new Font("Dialog", Font.BOLD, 12));
+		lblDoves.setBounds(12, 32, 57, 15);
+		panelSliderDays.add(lblDoves);
+
+		lblDovesCount.setForeground(Color.WHITE);
+		lblDovesCount.setFont(new Font("Dialog", Font.BOLD, 12));
+		lblDovesCount.setBounds(81, 32, 57, 15);
+		panelSliderDays.add(lblDovesCount);
+
+		lblHawks.setForeground(Color.WHITE);
+		lblHawks.setFont(new Font("Dialog", Font.BOLD, 12));
+		lblHawks.setBounds(12, 52, 57, 15);
+		panelSliderDays.add(lblHawks);
+
+		lblHawksCount.setForeground(Color.WHITE);
+		lblHawksCount.setFont(new Font("Dialog", Font.BOLD, 12));
+		lblHawksCount.setBounds(81, 52, 57, 15);
+		panelSliderDays.add(lblHawksCount);
+
+		panelSliderVelocity.setBackground(new Color(0, 128, 128));
+		panelSliderVelocity.setBounds(0, 465, 237, 80);
+		panelSliderVelocity.setLayout(null);
+		add(panelSliderVelocity);
 
 		lblVelocity.setForeground(new Color(255, 255, 255));
 		lblVelocity.setBounds(12, 12, 213, 28);
-		panelSlider.add(lblVelocity);
+		panelSliderVelocity.add(lblVelocity);
 
 		sliderVelocity.setBounds(12, 52, 170, 16);
-		panelSlider.add(sliderVelocity);
+		panelSliderVelocity.add(sliderVelocity);
 		sliderVelocity.setForeground(new Color(255, 255, 255));
 		sliderVelocity.setBackground(new Color(0, 128, 128));
 		sliderVelocity.setValue(1);
@@ -133,28 +176,57 @@ public class ControllerMenu extends JPanel {
 		lblSliderVelocity.setForeground(new Color(255, 255, 255));
 		lblSliderVelocity.setBounds(188, 52, 37, 16);
 		lblSliderVelocity.setText(Integer.toString(sliderVelocity.getValue()));
-		panelSlider.add(lblSliderVelocity);
+		panelSliderVelocity.add(lblSliderVelocity);
 		lblSpecies.setForeground(new Color(255, 255, 255));
 		lblSpecies.setBounds(12, 86, 212, 15);
 		add(lblSpecies);
+		panelSliderEnd.setLayout(null);
+		panelSliderEnd.setBackground(new Color(0, 128, 128));
+		panelSliderEnd.setBounds(0, 559, 237, 80);
+
+		add(panelSliderEnd);
+		lblEnd.setFont(new Font("Dialog", Font.BOLD, 18));
+		lblEnd.setHorizontalAlignment(SwingConstants.CENTER);
+		lblEnd.setForeground(new Color(255, 0, 0));
+		lblEnd.setBounds(12, 0, 213, 28);
+
+		panelSliderEnd.add(lblEnd);
+		lblRestart.setHorizontalAlignment(SwingConstants.CENTER);
+		lblRestart.setForeground(Color.WHITE);
+		lblRestart.setFont(new Font("Dialog", Font.BOLD, 10));
+		lblRestart.setBounds(12, 40, 213, 14);
+
+		panelSliderEnd.add(lblRestart);
+	}
+
+	@Override
+	public void paint(Graphics g) {
+		super.paint(g);
+		lblDaysCount.setText(environment.daysCount.toString());
+		lblDovesCount.setText(environment.dovesCount.toString());
+		lblHawksCount.setText(environment.hawksCount.toString());
+		componentsState(environment.running);
 	}
 
 	void velocityChanged() {
 		lblSliderVelocity.setText(Integer.toString(sliderVelocity.getValue()));
 	}
-	
+
 	// Adiciona behaviour para iniciar a simulacao
 	void startSimulation() {
 		List<SpeciesState> species = new ArrayList<>();
+		this.alreadyStarted = true;
 
-		if (chckbxDove.isSelected()) {
-			species.add(new SpeciesState("dove", CreatureState.FRIENDLY, "/species_1.png"));
+		if ((int) spinnerDovesAmount.getValue() > 0) {
+			species.add(new SpeciesState(EnvironmentAgent.DOVE_NAME, (int) spinnerDovesAmount.getValue(),
+					CreatureState.FRIENDLY, "/species_1.png"));
 		}
-		if (chckbxHawk.isSelected()) {
-			species.add(new SpeciesState("hawk", CreatureState.AGGRESSIVE, "/species_2.png"));
+		if ((int) spinnerHawksAmount.getValue() > 0) {
+			species.add(new SpeciesState(EnvironmentAgent.HAWK_NAME, (int) spinnerHawksAmount.getValue(),
+					CreatureState.AGGRESSIVE, "/species_2.png"));
 		}
 
-		if (chckbxDove.isSelected() || chckbxHawk.isSelected()) {
+		if (!species.isEmpty()) {
 			componentsState(true);
 
 			environment.addBehaviour(new OneShotBehaviour() {
@@ -162,12 +234,12 @@ public class ControllerMenu extends JPanel {
 
 				public void action() {
 					((EnvironmentAgent) myAgent).startSimulation(boardSize, species,
-							(int) spinnerCreaturesAmount.getValue(), (int) spinnerFoodAmount.getValue());
+							(int) spinnerFoodAmount.getValue());
 				}
 			});
 		}
 	}
-	
+
 	void stopSimulation() {
 		componentsState(false);
 
@@ -181,17 +253,17 @@ public class ControllerMenu extends JPanel {
 	}
 
 	void componentsState(boolean starting) {
-		chckbxDove.setEnabled(!starting);
-		chckbxHawk.setEnabled(!starting);
-		spinnerCreaturesAmount.setEnabled(!starting);
+		spinnerDovesAmount.setEnabled(!starting);
+		spinnerHawksAmount.setEnabled(!starting);
 		spinnerFoodAmount.setEnabled(!starting);
 		handleSliderVelocity(starting);
 		btnStart.setText(starting ? "Parar" : "Iniciar");
+		panelSliderEnd.setVisible(alreadyStarted && !starting);
 		this.simulationRunning = starting;
 	}
-	
+
 	private void handleSliderVelocity(boolean active) {
 		sliderVelocity.setEnabled(active);
-		sliderVelocity.setValue(!active? 1 : sliderVelocity.getValue());
+		sliderVelocity.setValue(!active ? 1 : sliderVelocity.getValue());
 	}
 }
