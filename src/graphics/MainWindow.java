@@ -106,7 +106,7 @@ public class MainWindow extends JFrame {
 				while(true) {
 					repaint();
 					try {
-						Thread.sleep(500);
+						Thread.sleep(50);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}

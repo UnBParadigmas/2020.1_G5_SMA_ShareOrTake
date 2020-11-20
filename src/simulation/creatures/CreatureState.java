@@ -18,10 +18,12 @@ public class CreatureState extends BoardItem{
 	private boolean alive;
 	private String shareStrategy;
 	private Image speciesImage;
+	private String speciesName;
 	
 	// Construtor parametrizado
-	public CreatureState (AID creatureId, int xPos, int yPos, String shareStrategy, Image speciesImage){
+	public CreatureState (AID creatureId, String speciesName, int xPos, int yPos, String shareStrategy, Image speciesImage){
 		this.creatureId = creatureId;
+		this.speciesName = speciesName;
 		this.setXPos(xPos);
 		this.setYPos(yPos);
 		this.shareStrategy = shareStrategy;
@@ -45,7 +47,11 @@ public class CreatureState extends BoardItem{
 	}
 	
 	public AID getId() {
-		return creatureId;
+		return this.creatureId;
+	}
+	
+	public String getSpeciesName() {
+		return this.speciesName;
 	}
 	
 	public void setShareStrategy(String shareStrategy) {

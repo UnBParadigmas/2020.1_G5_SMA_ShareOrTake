@@ -3,7 +3,10 @@ package simulation.environment;
 import java.awt.Image;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
@@ -42,6 +45,12 @@ public class EnvironmentAgent extends Agent {
 	public final static String FOOD_SEEK = "FOOD_SEEK";
 	public final static String REPRODUCE = "REPRODUCE";
 
+	private final static Map<String, String> SPECIES_IMAGE_PATH = new HashMap<String, String>();
+	static {
+		SPECIES_IMAGE_PATH.put("dove", "/specy_1.png");
+		SPECIES_IMAGE_PATH.put("hawk", "/specy_2.png");
+	}
+
 	private MainWindow mainWindow = null;
 
 	int boardSize = 0;
@@ -51,7 +60,7 @@ public class EnvironmentAgent extends Agent {
 	private List<CreatureState> creaturesState = new ArrayList<>();
 	private List<CreatureState> creaturePool = new ArrayList<>();
 	private int totalIterations = 0;
-	
+
 	// Thread para avisar periodicamente para as criaturas irem buscar comida
 	ThreadedBehaviourFactory incDayThread = new ThreadedBehaviourFactory();
 
@@ -79,13 +88,20 @@ public class EnvironmentAgent extends Agent {
 							fulfillFoodSeekRequest(msg);
 						}
 						break;
+
 					case ACLMessage.INFORM:
 
-						switch (msg.getContent()) {
-						case EnvironmentAgent.REPRODUCE:
-							doReproduce(msg);
-							break;
-						default:
+						if (msg.getContent().startsWith(EnvironmentAgent.GOBACK)) {
+
+							String msgParts[] = msg.getContent().split(",");
+
+							msg.getSender().getLocalName();
+
+							moveCreature(envAgent, msg.getSender(), Integer.parseInt(msgParts[1]),
+									Integer.parseInt(msgParts[2]));
+						} else if (msg.getContent().startsWith(EnvironmentAgent.REPRODUCE)) {
+//							doReproduce(msg);
+						} else {
 							System.out.println("Mensagem inesperada (ambiente).");
 						}
 
@@ -93,20 +109,16 @@ public class EnvironmentAgent extends Agent {
 					case ACLMessage.ACCEPT_PROPOSAL:
 						try {
 							Object[] oMsg = (Object[]) msg.getContentObject();
-							CreatureState creature = new CreatureState((AID) oMsg[3], (int) oMsg[0], (int) oMsg[1],
+							CreatureState creature = new CreatureState((AID) oMsg[3], null, (int) oMsg[0], (int) oMsg[1],
 									(String) oMsg[2], null);
-							
+
 							envAgent.creaturePool.add(creature);
 
 							if (envAgent.creaturePool.size() == envAgent.creaturesState.size()) {
 								agentFoodTime(envAgent, creaturePool);
 							}
 
-							for (int j = 0; j < envAgent.creaturesState.size(); j++) {
-								if (envAgent.creaturesState.get(j).getId().equals(creature.getId())) {
-									envAgent.creaturesState.get(j).setPos(creature.getXPos(), creature.getYPos());
-								}
-							}
+							moveCreature(envAgent, creature.getId(), creature.getXPos(), creature.getYPos());
 
 						} catch (UnreadableException e) {
 							// Nao reconheci a mensagem.
@@ -158,13 +170,13 @@ public class EnvironmentAgent extends Agent {
 				daysCount++;
 				dayAlert();
 			} else {
-//				nightAlert();
+				nightAlert();
 			}
 		}
 
 		public boolean done() {
 			System.out.println((isDay ? "DIA " : "NOITE ") + daysCount);
-			return daysCount > 10;
+			return false;
 		}
 
 	}
@@ -269,7 +281,7 @@ public class EnvironmentAgent extends Agent {
 						new Object[] { pos[0], pos[1], shareStrategy, speciesName });
 				creatureCtl.start();
 
-				creaturesList.add(new CreatureState(new AID(creatureName, AID.ISLOCALNAME), pos[0], pos[1],
+				creaturesList.add(new CreatureState(new AID(creatureName, AID.ISLOCALNAME), speciesName, pos[0], pos[1],
 						shareStrategy, speciesImage));
 			}
 		} catch (ControllerException e) {
@@ -303,6 +315,16 @@ public class EnvironmentAgent extends Agent {
 		send(coords);
 	}
 
+	private void moveCreature(EnvironmentAgent envAgent, AID creatureId, int xPos, int yPos) {
+		for (int j = 0; j < envAgent.creaturesState.size(); j++) {
+			if (envAgent.creaturesState.get(j).getId().equals(creatureId)) {
+				envAgent.creaturesState.get(j).setPos(xPos, yPos);
+			}
+		}
+
+		System.out.println("Nova posicao X: " + xPos + " Nova posicao Y: " + yPos);
+	}
+
 	private List<Food> randomElementOneRepeat(List<Food> foods) {
 		List<Food> foodCopy = new ArrayList<>(foods);
 		Random rand = new Random();
@@ -334,22 +356,17 @@ public class EnvironmentAgent extends Agent {
 	private void compareStrategies(EnvironmentAgent envAgent, CreatureState creature1, CreatureState creature2) {
 		String strat1 = creature1.getShareStrategy();
 		String strat2 = creature2.getShareStrategy();
-		
+
 		System.out.println("COMPARAR ESTRATEGIAS");
 
 		// Strat1 and strat2 are equal
 		if (strat1.equals(strat2)) {
 			switch (strat1) {
-			case CreatureState.FRIENDLY:
-				agentGoBack(envAgent, creature1);
-				agentGoBack(envAgent, creature2);
-				break;
 			case CreatureState.AGGRESSIVE:
 				agentKill(envAgent, creature1);
 				agentKill(envAgent, creature2);
 				break;
 			default:
-
 			}
 		} else { // Strat 1 and strat2 are not equal
 			switch (strat1) {
@@ -369,40 +386,19 @@ public class EnvironmentAgent extends Agent {
 
 	// Handles what happens after all creatures have moved to eat.
 	private void agentFoodTime(EnvironmentAgent envAgent, List<CreatureState> creaturePool) {
-		if (creaturePool.size() > 1) {			
+		if (creaturePool.size() > 1) {
 			for (int i = 0; i < creaturePool.size(); i++) {
 				for (int j = i + 1; j < creaturePool.size(); j++) {
 					if (checkDuplicates(creaturePool.get(i), creaturePool.get(j))) {
 						compareStrategies(envAgent, creaturePool.get(i), creaturePool.get(j));
-					} else {
-						agentGoBack(envAgent, creaturePool.get(i));
 					}
 				}
 			}
 		} else {
-			agentGoBack(envAgent, creaturePool.get(0));
+			agentChanceReproduce(envAgent, creaturePool.get(0), 1);
 		}
 
 		creaturePool.clear();
-	}
-
-	private void doReproduce(ACLMessage msg) {
-		try {
-			String speciesName = (String) msg.getContentObject();
-
-			System.out.println("Reproduzir " + speciesName);
-//			createCreatureAgents(speciesState, i, 1, 0, boardSize - 1);
-		} catch (UnreadableException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void agentGoBack(EnvironmentAgent envAgent, CreatureState creature) {
-		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-		msg.addReceiver(creature.getId());
-		msg.setSender(envAgent.getAID());
-		msg.setContent(EnvironmentAgent.GOBACK);
-		send(msg);
 	}
 
 	private void agentKill(EnvironmentAgent envAgent, CreatureState creature) {
@@ -411,29 +407,37 @@ public class EnvironmentAgent extends Agent {
 		msg.setSender(envAgent.getAID());
 		msg.setContent(EnvironmentAgent.DEAD);
 		send(msg);
+
+		for (int i = 0; i < this.creaturesState.size(); i++) {
+			if (this.creaturesState.get(i).getId().equals(creature.getId())) {
+				this.creaturesState.remove(i);
+			}
+		}
 	}
 
 	private void agentChanceReproduce(EnvironmentAgent envAgent, CreatureState creature, double chance) {
-		if (Math.random() < chance) {
-			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-			msg.addReceiver(creature.getId());
-			msg.setSender(envAgent.getAID());
-			msg.setContent(EnvironmentAgent.REPRODUCE);
-			send(msg);
-		} else {
-			agentGoBack(envAgent, creature);
+		if (chance > Math.random()) {
+//			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+//			msg.addReceiver(creature.getId());
+//			msg.setSender(envAgent.getAID());
+//			msg.setContent(EnvironmentAgent.REPRODUCE);
+//			send(msg);
+//
+//			for (int i = 0; i < this.creaturesState.size(); i++) {
+//				if (this.creaturesState.get(i).getId().equals(creature.getId())) {
+//					CreatureState creatureFound = this.creaturesState.get(i);
+//
+//					createCreatureAgents(creatureFound.getSpeciesName(), creatureFound.getShareStrategy(),
+//							creatureFound.getImage(), 1, 0, boardSize - 1);
+//				}
+//			}
+
 		}
 	}
 
 	private void agentChanceSurvive(EnvironmentAgent envAgent, CreatureState creature, double chance) {
-		if (Math.random() < chance) {
-			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-			msg.addReceiver(creature.getId());
-			msg.setSender(envAgent.getAID());
-			msg.setContent(EnvironmentAgent.DEAD);
-			send(msg);
-		} else {
-			agentGoBack(envAgent, creature);
+		if (chance < Math.random()) {
+			agentKill(envAgent, creature);
 		}
 	}
 }
