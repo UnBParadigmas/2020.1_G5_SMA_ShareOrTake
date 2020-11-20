@@ -197,6 +197,7 @@ public class EnvironmentAgent extends Agent {
 		this.boardSize = boardSize;
 		this.maxOfBorderFreeSpaces = boardSize * 4 - 4;
 		this.foodAmount = foodAmount;
+		this.daysCount = 0;
 
 		System.out.println("---------- INICIANDO SIMULACAO ----------");
 		setUpFood(foodAmount);
@@ -213,6 +214,7 @@ public class EnvironmentAgent extends Agent {
 		sendBroadCast(ACLMessage.INFORM, DEAD);
 		incDayThread.interrupt();
 		mainWindow.clearBoard();
+		this.daysCount = 0;
 		this.running = false;
 	}
 
