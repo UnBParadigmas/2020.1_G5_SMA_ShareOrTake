@@ -45,8 +45,6 @@ public class CreatureAgent extends Agent {
 			this.yPos = this.initialYPos;
 			
 			System.out.println("Criando criatura " + getLocalName());
-			System.out.println("POS X: " + this.xPos + ", POS Y: " + this.yPos);
-			System.out.println("Estrategia: " + this.shareStrategy);
 		
 			this.registerInDFD();
 		
@@ -66,10 +64,6 @@ public class CreatureAgent extends Agent {
 									case EnvironmentAgent.DAY_ARAISE:
 										// Informacao de que esta de dia, a criatura deve procurar comida
 										seekFood();
-										break;
-									case EnvironmentAgent.NIGHT_FALL:
-										// Informacao de que esta de dia, a criatura deve voltar para casa
-										System.out.println(getLocalName() + " voltou para casa");
 										break;
 									case EnvironmentAgent.DEAD:
 										kill();
@@ -158,7 +152,7 @@ public class CreatureAgent extends Agent {
  
 		} catch (UnreadableException e) {
 			// Nao reconheci a mensagem.
-			System.out.println("N�o consegui ler a posi��o nova!");
+			System.out.println("Nao consegui ler a posicao nova!");
 			e.printStackTrace();
 		}
 	}
@@ -191,10 +185,15 @@ public class CreatureAgent extends Agent {
 	
 	
 	private void doReproduceRequest(CreatureAgent ctrAgent, ACLMessage origin) {
-		ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+		ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+		msg.setContent(EnvironmentAgent.REPRODUCE);
 		msg.addReceiver(origin.getSender());
 		msg.setSender(ctrAgent.getAID());
-		msg.setContent(ctrAgent.speciesName);
+		try {
+			msg.setContentObject(ctrAgent.speciesName);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		send(msg);
 	}
 }

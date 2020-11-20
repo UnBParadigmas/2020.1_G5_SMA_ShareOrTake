@@ -100,6 +100,18 @@ public class EnvironmentAgent extends Agent {
 							if(envAgent.currentIteration == 0) {
 								agentFoodTime(envAgent, creaturePool);
 							}
+							
+							for (int i = 0; i < speciesState.size(); i++) {
+								if (speciesState.get(i).getShareStrategy().equals(creature.getShareStrategy())) {
+									for (int j = 0; j < speciesState.get(i).getCreatureCount(); j++) {
+										if (speciesState.get(i).getCreaturesState().get(j).getId().equals(creature.getId())) {
+											// Movimento
+											speciesState.get(i).getCreaturesState().get(j).setPos(creature.getXPos(), creature.getYPos());
+										}
+									}
+								}
+							}
+							
 						} catch (UnreadableException e) {
 							// Nao reconheci a mensagem.
 							System.out.println("Nao consegui ler a posicao nova! (ambiente)");
@@ -150,7 +162,7 @@ public class EnvironmentAgent extends Agent {
 				daysCount++;
 				dayAlert();
 			} else {
-				nightAlert();
+//				nightAlert();
 			}
 		}
 
@@ -361,6 +373,7 @@ public class EnvironmentAgent extends Agent {
 	
 	// Handles what happens after all creatures have moved to eat.
 	private void agentFoodTime(EnvironmentAgent envAgent, List<CreatureState> creaturePool) {
+		System.out.println("COMPARAR ESTRATEGIAS");
 		int total = envAgent.totalIterations;
 		for(int i = 0; i < total; i++) {
 			for(int j = i+1; j < total; i++) {
@@ -376,11 +389,18 @@ public class EnvironmentAgent extends Agent {
 	}
 	
 	private void doReproduce(ACLMessage msg) {
-		for(SpecyState species : speciesState) {
-			if(species.getName().equals(msg.getContent())) {
-				createCreatureAgents(speciesState, speciesState.indexOf(species.getName()), 1, 0, boardSize - 1);
-				this.totalIterations+= 1;
+		try {
+			String speciesName = (String) msg.getContentObject();
+
+			System.out.println("Reproduzir " + speciesName);
+			for(int i = 0; i < this.speciesState.size(); i++) {
+				if(speciesState.get(i).getName().equals(speciesName)) {
+					createCreatureAgents(speciesState, i, 1, 0, boardSize - 1);
+					this.totalIterations+= 1;
+				}
 			}
+		} catch (UnreadableException e) {
+			e.printStackTrace();
 		}
 	}
 	
