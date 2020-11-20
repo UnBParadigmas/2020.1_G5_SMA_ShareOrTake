@@ -66,6 +66,7 @@ public class CreatureAgent extends Agent {
 										seekFood();
 										break;
 									case EnvironmentAgent.DEAD:
+										System.out.println("MORTO");
 										kill();
 										doDelete();
 										break;

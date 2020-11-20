@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import generic.board.item.BoardItemGroup;
+import simulation.creatures.CreatureState;
 import simulation.creatures.SpecyState;
 import simulation.environment.EnvironmentAgent;
 import simulation.resources.Food;
@@ -55,8 +56,8 @@ public class MainWindow extends JFrame {
 		this.envBoard.insertFood(foodItems, foodImage);
 	}
 	
-	public void insertSpecies(List<SpecyState> species) {
-		this.envBoard.insertSpecies(species);
+	public void insertSpecies(List<CreatureState> creatures) {
+		this.envBoard.insertSpecies(creatures);
 	}
 
 	private void buildWindow() {

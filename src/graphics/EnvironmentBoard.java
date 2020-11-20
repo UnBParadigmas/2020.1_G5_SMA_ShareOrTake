@@ -9,6 +9,7 @@ import java.util.List;
 import javax.swing.JPanel;
 
 import generic.board.item.BoardItemGroup;
+import simulation.creatures.CreatureState;
 import simulation.creatures.SpecyState;
 import simulation.resources.Food;
 
@@ -26,7 +27,7 @@ public class EnvironmentBoard extends JPanel {
 
 	private Image foodImage = null;
 	private List<Food> foodItems = new ArrayList<>();
-	private List<SpecyState> specyItems = new ArrayList<>();
+	private List<CreatureState> creaturesItems = new ArrayList<>();
 
 	public EnvironmentBoard(int boardSize) {
 		this.boardSize = boardSize;
@@ -41,7 +42,7 @@ public class EnvironmentBoard extends JPanel {
 	}
 	
 	public void clearBoard() {
-		this.specyItems.clear();
+		this.creaturesItems.clear();
 		this.foodItems.clear();
 	}
 
@@ -51,8 +52,8 @@ public class EnvironmentBoard extends JPanel {
 		this.repaint();
 	}
 	
-	public void insertSpecies(List<SpecyState> species) {
-		this.specyItems = species;
+	public void insertSpecies(List<CreatureState> creatures) {
+		this.creaturesItems = creatures;
 		this.repaint();
 	}
 	
@@ -74,14 +75,12 @@ public class EnvironmentBoard extends JPanel {
 	}
 
 	private void drawSpecies(Graphics g) {
-		for (int i = 0; i < this.specyItems.size(); i++) {
-			Image groupImage = this.resizeImage(specyItems.get(i).getGroupImage(), elementSize - GRID_LINE_THICKNESS,
+		for (int i = 0; i < this.creaturesItems.size(); i++) {
+			Image groupImage = this.resizeImage(creaturesItems.get(i).getImage(), elementSize - GRID_LINE_THICKNESS,
 					elementSize - GRID_LINE_THICKNESS);
 			
-			for (int j = 0; j < this.specyItems.get(i).getCreaturesState().size(); j++) {
-				this.drawElement(g, groupImage, this.specyItems.get(i).getCreaturesState().get(j).getXPos(),
-						this.specyItems.get(i).getCreaturesState().get(j).getYPos());
-			}
+			this.drawElement(g, groupImage, this.creaturesItems.get(i).getXPos(),
+					this.creaturesItems.get(i).getYPos());
 		}
 	}
 	
