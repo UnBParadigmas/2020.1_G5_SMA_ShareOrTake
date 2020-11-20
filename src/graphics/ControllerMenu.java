@@ -30,7 +30,7 @@ public class ControllerMenu extends JPanel {
 	JButton btnStart = new JButton("Iniciar");
 	JLabel lblVelocity = new JLabel("Velocidade");
 	JLabel lblSliderVelocity = new JLabel();
-	JLabel lblSpecies = new JLabel("Espécies:");
+	JLabel lblSpecies = new JLabel("Especies:");
 	JLabel lblDovesAmount = new JLabel("Qtd de Doves (Amigavel):");
 	JSpinner spinnerDovesAmount = new JSpinner();
 	JLabel lblHawksAmount = new JLabel("Qtd de Hawks (Agressivo):");
