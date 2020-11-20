@@ -10,7 +10,7 @@ import javax.imageio.ImageIO;
 /*
  * Grupo de especies com os mesmos comportamentos
  */
-public class SpecyState{
+public class SpeciesState{
 
     private String name;
 	private List<CreatureState> creaturesState = new ArrayList<CreatureState>();
@@ -19,7 +19,7 @@ public class SpecyState{
 	private Image groupImage;
 	
 	// Construtor parametrizado
-    public SpecyState(String name, String shareSttrategy, String imagePath){
+    public SpeciesState(String name, String shareSttrategy, String imagePath){
     	this.setImage(imagePath);
         this.name = name;
         this.shareStrategy = shareSttrategy;

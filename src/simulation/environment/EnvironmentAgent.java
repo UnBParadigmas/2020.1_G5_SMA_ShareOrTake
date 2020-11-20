@@ -26,7 +26,7 @@ import jade.wrapper.AgentController;
 import jade.wrapper.ControllerException;
 import jade.wrapper.PlatformController;
 import simulation.creatures.CreatureState;
-import simulation.creatures.SpecyState;
+import simulation.creatures.SpeciesState;
 import simulation.resources.Food;
 
 /**
@@ -47,8 +47,8 @@ public class EnvironmentAgent extends Agent {
 
 	private final static Map<String, String> SPECIES_IMAGE_PATH = new HashMap<String, String>();
 	static {
-		SPECIES_IMAGE_PATH.put("dove", "/specy_1.png");
-		SPECIES_IMAGE_PATH.put("hawk", "/specy_2.png");
+		SPECIES_IMAGE_PATH.put("dove", "/species_1.png");
+		SPECIES_IMAGE_PATH.put("hawk", "/species_2.png");
 	}
 
 	Map<String, Integer> availableIndexOfSpeciesName = new HashMap<>();
@@ -63,7 +63,6 @@ public class EnvironmentAgent extends Agent {
 	private List<Food> randomFood = new ArrayList<>();
 	private List<CreatureState> creaturesState = new ArrayList<>();
 	private List<CreatureState> creaturePool = new ArrayList<>();
-	private int totalIterations = 0;
 
 	// Thread para avisar periodicamente para as criaturas irem buscar comida
 	ThreadedBehaviourFactory incDayThread = new ThreadedBehaviourFactory();
@@ -176,14 +175,14 @@ public class EnvironmentAgent extends Agent {
 		sendBroadCast(ACLMessage.INFORM, NIGHT_FALL);
 	}
 
-	public void startSimulation(int boardSize, List<SpecyState> speciesList, int creaturesPerSpecy, int foodAmount) {
+	public void startSimulation(int boardSize, List<SpeciesState> speciesList, int creaturesPerSpecies, int foodAmount) {
 		this.boardSize = boardSize;
 		this.maxOfBorderFreeSpaces = boardSize * 4 - 4;
 		this.foodAmount = foodAmount;
 
 		System.out.println("---------- INICIANDO SIMULACAO ----------");
 		setUpFood(foodAmount);
-		setUpCreaturesAgents(speciesList, creaturesPerSpecy);
+		setUpCreaturesAgents(speciesList, creaturesPerSpecies);
 
 		System.out.println("Inicia rotina de controle temporal (passagem dos dias)");
 		Behaviour incDayBehaviour = new IncrementDaysBehaviour(this, 1000);
@@ -241,7 +240,7 @@ public class EnvironmentAgent extends Agent {
 		return null;
 	}
 
-	private void setUpCreaturesAgents(List<SpecyState> speciesList, int creaturesPerSpecy) {
+	private void setUpCreaturesAgents(List<SpeciesState> speciesList, int creaturesPerSpecies) {
 
 		availableIndexOfSpeciesName.clear();
 		for (int i = 0; i < speciesList.size(); i++) {
@@ -249,7 +248,7 @@ public class EnvironmentAgent extends Agent {
 			availableIndexOfSpeciesName.put(speciesList.get(i).getName(), 0);
 
 			this.creaturesState.addAll(createCreatureAgents(speciesList.get(i).getName(),
-					speciesList.get(i).getShareStrategy(), speciesImage, creaturesPerSpecy, 0, boardSize - 1));
+					speciesList.get(i).getShareStrategy(), speciesImage, creaturesPerSpecies, 0, boardSize - 1));
 		}
 
 		mainWindow.insertSpecies(this.creaturesState);
@@ -467,24 +466,5 @@ public class EnvironmentAgent extends Agent {
 		if (chance < Math.random()) {
 			agentKill(envAgent, creature.getId());
 		}
-	}
-	
-	private List<Food> randomElementOneRepeat(List<Food> foods) {
-		List<Food> foodCopy = new ArrayList<>(foods);
-		Random rand = new Random();
-		List<Food> randomSequence = new ArrayList<>();
-		int numberOfElements = foods.size();
-		int repeat[] = new int[numberOfElements];
-
-		for (int i = 0; i < numberOfElements; i++) {
-			int randomIndex = rand.nextInt(foodCopy.size());
-			Food randomElement = foodCopy.get(randomIndex);
-			randomSequence.add(randomElement);
-			repeat[randomIndex] += 1;
-			if (repeat[randomIndex] > 1) {
-				foodCopy.remove(randomIndex);
-			}
-		}
-		return randomSequence;
 	}
 }

@@ -8,9 +8,8 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
-import generic.board.item.BoardItemGroup;
 import simulation.creatures.CreatureState;
-import simulation.creatures.SpecyState;
+import simulation.creatures.SpeciesState;
 import simulation.resources.Food;
 
 /**
