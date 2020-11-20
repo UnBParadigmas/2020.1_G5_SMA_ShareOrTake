@@ -9,10 +9,21 @@ import generic.board.item.BoardItem;
  */
 public class Food extends BoardItem {
 	
+	// Informa que ja foi escolhido por uma criatura
+	private boolean alreadyChoosed = false;
+	
 	// Construtor parametrizado
 	public Food(Integer amount, int xPos, int yPos) {
 		this.setXPos(xPos);
 		this.setYPos(yPos);
+	}
+	
+	public void choose() {
+		this.alreadyChoosed = true;
+	}
+	
+	public boolean alreadyChoosed() {
+		return this.alreadyChoosed;
 	}
 	
 	public static void createFoodResources(List<Food> foodItems, int amount, int minPos, int maxPos) {
