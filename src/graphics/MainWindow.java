@@ -10,9 +10,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
-import generic.board.item.BoardItemGroup;
 import simulation.creatures.CreatureState;
-import simulation.creatures.SpecyState;
 import simulation.environment.EnvironmentAgent;
 import simulation.resources.Food;
 
@@ -76,12 +74,6 @@ public class MainWindow extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(null);
 		setContentPane(contentPane);
-	}
-
-	private void buildStartSettingsLayout() {
-		initialScreen = new InitialScreen();
-		initialScreen.setBounds(0, 0, 800, 800);
-		contentPane.add(initialScreen);
 	}
 
 	private void buildSimulationLayout() {

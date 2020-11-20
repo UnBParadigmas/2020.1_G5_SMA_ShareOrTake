@@ -20,15 +20,20 @@ public class CreatureState extends BoardItem{
 	private Image speciesImage;
 	private String speciesName;
 	
+	private int initialXPos;
+	private int initialYPos;
+	
 	// Construtor parametrizado
 	public CreatureState (AID creatureId, String speciesName, int xPos, int yPos, String shareStrategy, Image speciesImage){
 		this.creatureId = creatureId;
 		this.speciesName = speciesName;
-		this.setXPos(xPos);
-		this.setYPos(yPos);
+		this.initialXPos = xPos;
+		this.initialYPos = yPos;
 		this.shareStrategy = shareStrategy;
 		this.speciesImage = speciesImage;
 	
+		this.setXPos(this.initialXPos);
+		this.setYPos(this.initialYPos);
 		this.alive = true;
 	}
 
@@ -62,6 +67,14 @@ public class CreatureState extends BoardItem{
 		return this.shareStrategy;
 	}
 	
+	public int getInitialXPos() {
+		return this.initialXPos;
+	}
+	
+	public int getInitialYPos() {
+		return this.initialYPos;
+	}
+	
 	// Gera a posicao aleatoria da criatura
 	// A criatura so deve iniciar nas bordas do board 
 	public static int[] getRandomPos(List<CreatureState> creaturesState, int minPos, int maxPos) {
@@ -70,8 +83,8 @@ public class CreatureState extends BoardItem{
 		do {
 			repeated = false;
 			pos = randomPos(minPos, maxPos);
-			for (BoardItem otherCreature : creaturesState) {
-				if (otherCreature.getXPos() == pos[0] && otherCreature.getYPos() == pos[1]) {
+			for (CreatureState otherCreature : creaturesState) {
+				if (otherCreature.getInitialXPos() == pos[0] && otherCreature.getInitialYPos() == pos[1]) {
 					repeated = true;
 					break;
 				}

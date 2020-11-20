@@ -12,7 +12,7 @@ import javax.swing.event.ChangeEvent;
 
 import jade.core.behaviours.OneShotBehaviour;
 import simulation.creatures.CreatureState;
-import simulation.creatures.SpecyState;
+import simulation.creatures.SpeciesState;
 import simulation.environment.EnvironmentAgent;
 
 import java.awt.Font;
@@ -145,13 +145,13 @@ public class ControllerMenu extends JPanel {
 	
 	// Adiciona behaviour para iniciar a simulacao
 	void startSimulation() {
-		List<SpecyState> species = new ArrayList<>();
+		List<SpeciesState> species = new ArrayList<>();
 
 		if (chckbxDove.isSelected()) {
-			species.add(new SpecyState("dove", CreatureState.FRIENDLY, "/specy_1.png"));
+			species.add(new SpeciesState("dove", CreatureState.FRIENDLY, "/species_1.png"));
 		}
 		if (chckbxHawk.isSelected()) {
-			species.add(new SpecyState("hawk", CreatureState.AGGRESSIVE, "/specy_2.png"));
+			species.add(new SpeciesState("hawk", CreatureState.AGGRESSIVE, "/species_2.png"));
 		}
 
 		if (chckbxDove.isSelected() || chckbxHawk.isSelected()) {
