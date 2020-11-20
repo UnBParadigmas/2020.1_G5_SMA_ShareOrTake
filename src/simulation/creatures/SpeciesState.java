@@ -13,15 +13,16 @@ import javax.imageio.ImageIO;
 public class SpeciesState{
 
     private String name;
-	private List<CreatureState> creaturesState = new ArrayList<CreatureState>();
 	private String shareStrategy;
 	private String imagePath;
-	private Image groupImage;
+	private Image image;
+	private int creaturesAmount = 0;
 	
 	// Construtor parametrizado
-    public SpeciesState(String name, String shareSttrategy, String imagePath){
+    public SpeciesState(String name, int amount, String shareSttrategy, String imagePath){
     	this.setImage(imagePath);
         this.name = name;
+        this.creaturesAmount = amount;
         this.shareStrategy = shareSttrategy;
         this.imagePath = imagePath;
     }
@@ -29,6 +30,10 @@ public class SpeciesState{
 	// Retorna o nome da espécie.
 	public String getName() {
 		return name;
+	}
+	
+	public int getCreaturesAmount() {
+		return this.creaturesAmount;
 	}
 	
 	public String getShareStrategy() {
@@ -40,7 +45,7 @@ public class SpeciesState{
 	}
 	
 	public Image getGroupImage() {
-		return groupImage;
+		return image;
 	}
 	
 	// Muda o nome da espécie para o argumento.
@@ -48,23 +53,9 @@ public class SpeciesState{
 		this.name = name;
 	}
 	
-	public List<CreatureState> getCreaturesState() {
-		return this.creaturesState;
-	}
-	
-    // Retorna quantidade de criaturas da espécie.
-	public int getCreatureCount() {
-		return this.creaturesState.size();
-	}
-	
-    // Adiciona uma criatura a especie
-    public void addCreatureState(CreatureState creature) {
-    	this.creaturesState.add(creature);
-    }
-    
     private void setImage(String path) {
 		try {
-			this.groupImage = ImageIO.read(getClass().getResource(path));
+			this.image = ImageIO.read(getClass().getResource(path));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -25,13 +25,13 @@ public class MainWindow extends JFrame {
 	private static final int WIDTH = 1024;
 	private static final int HEIGHT = 800;
 
-	private JPanel contentPane;
+	private JPanel contentPane = new JPanel();
 
 	private EnvironmentAgent environment;
 
 	InitialScreen initialScreen;
-	private EnvironmentBoard envBoard;
-	private ControllerMenu controllerMenu;
+	private EnvironmentBoard envBoard = new EnvironmentBoard(0);
+	private ControllerMenu controllerMenu = new ControllerMenu(null, 0);
 
 	public MainWindow(EnvironmentAgent environment) {
 		this.environment = environment;
@@ -109,18 +109,18 @@ public class MainWindow extends JFrame {
 
 	@Override
 	public void paint(Graphics g) {
+		super.paint(g);
 		int menuWidth = 240;
 		int width = this.contentPane.getSize().width;
 		int height = this.contentPane.getSize().height;
 		int boardSize = Math.min(width - menuWidth, height);
 		
-
-		if (envBoard != null) {
+//		if (envBoard != null) {
 			envBoard.setBounds(0, 0, boardSize, boardSize);
 			envBoard.repaint();
-		}
+//		}
 
-		if (controllerMenu != null)
+//		if (controllerMenu != null)
 			controllerMenu.setBounds(width - menuWidth, 0, menuWidth, height);
 	}
 
