@@ -68,7 +68,6 @@ public class CreatureAgent extends Agent {
 								doGoBack(ctrAgent);
 								break;
 							case EnvironmentAgent.DEAD:
-								System.out.println("MORTO");
 								kill();
 								doDelete();
 								break;

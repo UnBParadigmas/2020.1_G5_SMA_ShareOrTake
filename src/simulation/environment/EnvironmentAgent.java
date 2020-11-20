@@ -51,9 +51,12 @@ public class EnvironmentAgent extends Agent {
 		SPECIES_IMAGE_PATH.put("hawk", "/specy_2.png");
 	}
 
+	Map<String, Integer> availableIndexOfSpeciesName = new HashMap<>();
+
 	private MainWindow mainWindow = null;
 
 	int boardSize = 0;
+	int maxOfBorderFreeSpaces = 0; // Espacos disponiveis nas bordas do board para novas criaturas
 
 	private List<Food> foodResources = new ArrayList<>();
 	private List<Food> randomFood = new ArrayList<>();
@@ -109,8 +112,8 @@ public class EnvironmentAgent extends Agent {
 					case ACLMessage.ACCEPT_PROPOSAL:
 						try {
 							Object[] oMsg = (Object[]) msg.getContentObject();
-							CreatureState creature = new CreatureState((AID) oMsg[3], null, (int) oMsg[0], (int) oMsg[1],
-									(String) oMsg[2], null);
+							CreatureState creature = new CreatureState((AID) oMsg[3], null, (int) oMsg[0],
+									(int) oMsg[1], (String) oMsg[2], null);
 
 							envAgent.creaturePool.add(creature);
 
@@ -195,6 +198,7 @@ public class EnvironmentAgent extends Agent {
 
 	public void startSimulation(int boardSize, List<SpecyState> speciesList, int creaturesPerSpecy, int foodAmount) {
 		this.boardSize = boardSize;
+		this.maxOfBorderFreeSpaces = boardSize * 4 - 4;
 
 		System.out.println("---------- INICIANDO SIMULACAO ----------");
 		setUpFood(foodAmount);
@@ -257,8 +261,11 @@ public class EnvironmentAgent extends Agent {
 
 	private void setUpCreaturesAgents(List<SpecyState> speciesList, int creaturesPerSpecy) {
 
+		availableIndexOfSpeciesName.clear();
 		for (int i = 0; i < speciesList.size(); i++) {
-			Image speciesImage = getImage("/specy_" + (i + 1) + ".png");
+			Image speciesImage = getImage(SPECIES_IMAGE_PATH.get(speciesList.get(i).getName()));
+			availableIndexOfSpeciesName.put(speciesList.get(i).getName(), 0);
+
 			this.creaturesState.addAll(createCreatureAgents(speciesList.get(i).getName(),
 					speciesList.get(i).getShareStrategy(), speciesImage, creaturesPerSpecy, 0, boardSize - 1));
 		}
@@ -272,8 +279,11 @@ public class EnvironmentAgent extends Agent {
 		List<CreatureState> creaturesList = new ArrayList<>();
 
 		try {
+			int indexNameAvailable;
 			for (int i = 0; i < amount; i++) {
-				String creatureName = speciesName + "_" + i;
+				indexNameAvailable = availableIndexOfSpeciesName.get(speciesName);
+
+				String creatureName = speciesName + "_" + indexNameAvailable;
 				int pos[] = CreatureState.getRandomPos(this.creaturesState, minPos, maxPos);
 
 				AgentController creatureCtl = container.createNewAgent(creatureName,
@@ -283,6 +293,9 @@ public class EnvironmentAgent extends Agent {
 
 				creaturesList.add(new CreatureState(new AID(creatureName, AID.ISLOCALNAME), speciesName, pos[0], pos[1],
 						shareStrategy, speciesImage));
+
+				// atualiza o hashmap com o indice disponivel para a especie
+				availableIndexOfSpeciesName.put(speciesName, indexNameAvailable + 1);
 			}
 		} catch (ControllerException e) {
 			e.printStackTrace();
@@ -391,6 +404,8 @@ public class EnvironmentAgent extends Agent {
 				for (int j = i + 1; j < creaturePool.size(); j++) {
 					if (checkDuplicates(creaturePool.get(i), creaturePool.get(j))) {
 						compareStrategies(envAgent, creaturePool.get(i), creaturePool.get(j));
+					} else {
+						agentChanceReproduce(envAgent, creaturePool.get(0), 1);
 					}
 				}
 			}
@@ -411,26 +426,28 @@ public class EnvironmentAgent extends Agent {
 		for (int i = 0; i < this.creaturesState.size(); i++) {
 			if (this.creaturesState.get(i).getId().equals(creature.getId())) {
 				this.creaturesState.remove(i);
+				
 			}
 		}
 	}
 
 	private void agentChanceReproduce(EnvironmentAgent envAgent, CreatureState creature, double chance) {
-		if (chance > Math.random()) {
-//			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
-//			msg.addReceiver(creature.getId());
-//			msg.setSender(envAgent.getAID());
-//			msg.setContent(EnvironmentAgent.REPRODUCE);
-//			send(msg);
-//
-//			for (int i = 0; i < this.creaturesState.size(); i++) {
-//				if (this.creaturesState.get(i).getId().equals(creature.getId())) {
-//					CreatureState creatureFound = this.creaturesState.get(i);
-//
-//					createCreatureAgents(creatureFound.getSpeciesName(), creatureFound.getShareStrategy(),
-//							creatureFound.getImage(), 1, 0, boardSize - 1);
-//				}
-//			}
+		// So eh permitido reproducao se nao estiver estorado o limite maximo das bordas
+		if (chance > Math.random() && this.creaturesState.size() < this.maxOfBorderFreeSpaces) {
+			ACLMessage msg = new ACLMessage(ACLMessage.INFORM);
+			msg.addReceiver(creature.getId());
+			msg.setSender(envAgent.getAID());
+			msg.setContent(EnvironmentAgent.REPRODUCE);
+			send(msg);
+
+			for (int i = 0; i < this.creaturesState.size(); i++) {
+				if (this.creaturesState.get(i).getId().equals(creature.getId())) {
+					CreatureState creatureFound = this.creaturesState.get(i);
+
+					this.creaturesState.addAll(createCreatureAgents(creatureFound.getSpeciesName(),
+							creatureFound.getShareStrategy(), creatureFound.getImage(), 1, 0, boardSize - 1));
+				}
+			}
 
 		}
 	}
