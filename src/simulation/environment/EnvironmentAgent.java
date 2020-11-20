@@ -80,18 +80,21 @@ public class EnvironmentAgent extends Agent {
 					case ACLMessage.INFORM:
 
 						switch (msg.getContent()) {
-						default:
-							System.out.println("Mensagem inesperada (ambiente).");
+							case EnvironmentAgent.REPRODUCE:
+								doReproduce(msg);
+								break;
+							default:
+								System.out.println("Mensagem inesperada (ambiente).");
 						}
 
 						break;
 					case ACLMessage.ACCEPT_PROPOSAL:
 						try {
 							Object[] oMsg = (Object []) msg.getContentObject();
-							CreatureState creature = new CreatureState((AID) oMsg[4],
+							CreatureState creature = new CreatureState((AID) oMsg[3],
+																	   (int) oMsg[0],
 																	   (int) oMsg[1],
-																	   (int) oMsg[2],
-																	   (String) oMsg[3]);
+																	   (String) oMsg[2]);
 							envAgent.creaturePool.add(creature);
 							envAgent.currentIteration-= 1;
 							if(envAgent.currentIteration == 0) {
@@ -104,6 +107,7 @@ public class EnvironmentAgent extends Agent {
 						}
 						break;
 					default:
+						System.out.println("Formato inesperado (ambiente).");
 						break;
 					}
 				} else {
@@ -257,7 +261,8 @@ public class EnvironmentAgent extends Agent {
 						"simulation.creatures.CreatureAgent",
 						new Object[] { pos[0], 
 									   pos[1], 
-									   species.get(specyIndex).getShareStrategy(),});
+									   species.get(specyIndex).getShareStrategy(),
+									   species.get(specyIndex).getName()});
 				creatureCtl.start();
 
 				species.get(specyIndex).addCreatureState(new CreatureState(new AID(creatureName, AID.ISLOCALNAME),
@@ -270,23 +275,23 @@ public class EnvironmentAgent extends Agent {
 
 	private void fulfillFoodSeekRequest(ACLMessage msg) {
 		System.out.println(msg.getSender().getLocalName() + " requisita comida");
-		if (this.randomFood == null || this.randomFood.isEmpty()) {
-			this.randomFood = randomElementOneRepeat(this.foodResources);
+		
+		if (randomFood == null || randomFood.isEmpty()) {
+			randomFood = randomElementOneRepeat(foodResources);
 		}
-		Food newCoords = this.randomFood.get(0);
-		this.randomFood.remove(0);
+		Food newCoords = randomFood.get(0);
+		randomFood.remove(0);
 		ACLMessage coords = new ACLMessage(ACLMessage.PROPOSE);
-		coords.setSender(this.getAID());
+		coords.setSender(getAID());
 		coords.addReceiver(msg.getSender());
 		try {
-			Object[] oMsg = new Object[3];
-			oMsg[0] = newCoords.getFoodAmount();
-			oMsg[1] = newCoords.getXPos();
-			oMsg[2] = newCoords.getYPos();
+			Object[] oMsg = new Object[2];
+			oMsg[0] = newCoords.getXPos();
+			oMsg[1] = newCoords.getYPos();
 
 			coords.setContentObject(oMsg);
 		} catch (IOException ex) {
-			System.err.println("Mensagem de busca por comida incompleta.");
+			System.err.println("Nao consegui reconhecer mensagem. Mandando mensagem vazia.");
 			ex.printStackTrace(System.err);
 		}
 		send(coords);
@@ -297,14 +302,14 @@ public class EnvironmentAgent extends Agent {
 		Random rand = new Random();
 		List<Food> randomSequence = new ArrayList<>();
 		int numberOfElements = foods.size();
-		Boolean repeat[] = new Boolean[numberOfElements];
+		int repeat[] = new int[numberOfElements];
 
 		for (int i = 0; i < numberOfElements; i++) {
 			int randomIndex = rand.nextInt(foodCopy.size());
 			Food randomElement = foodCopy.get(randomIndex);
 			randomSequence.add(randomElement);
-			repeat[randomIndex] = true;
-			if (repeat[randomIndex] == true) {
+			repeat[randomIndex] += 1;
+			if (repeat[randomIndex] > 1) {
 				foodCopy.remove(randomIndex);
 			}
 		}
@@ -368,6 +373,15 @@ public class EnvironmentAgent extends Agent {
 		}
 		creaturePool.clear();
 		envAgent.currentIteration = envAgent.totalIterations;
+	}
+	
+	private void doReproduce(ACLMessage msg) {
+		for(SpecyState species : speciesState) {
+			if(species.getName().equals(msg.getContent())) {
+				createCreatureAgents(speciesState, speciesState.indexOf(species.getName()), 1, 0, boardSize - 1);
+				this.totalIterations+= 1;
+			}
+		}
 	}
 	
 	private void agentGoBack(EnvironmentAgent envAgent, CreatureState creature) {

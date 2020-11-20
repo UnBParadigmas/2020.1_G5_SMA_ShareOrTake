@@ -9,28 +9,10 @@ import generic.board.item.BoardItem;
  */
 public class Food extends BoardItem {
 	
-	private Integer foodAmount;
-	
 	// Construtor parametrizado
 	public Food(Integer amount, int xPos, int yPos) {
-		this.foodAmount = amount;
 		this.setXPos(xPos);
 		this.setYPos(yPos);
-	}
-	
-	// Retorna quantia atual de comida.
-	public Integer getFoodAmount() {
-		return foodAmount;
-	}
-
-	// Muda a quantia de um recurso para o argumento recebido.
-	public void setFoodAmount(Integer foodAmount) {
-		this.foodAmount = foodAmount;
-	}
-
-	// Adiciona a quantia igual ao argumento recebido ao valor atual de quantia.
-	public void addFoodAmount(Integer foodAmount) {
-		this.foodAmount += foodAmount;
 	}
 	
 	public static void createFoodResources(List<Food> foodItems, int amount, int minPos, int maxPos) {
