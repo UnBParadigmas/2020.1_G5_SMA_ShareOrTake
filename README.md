@@ -54,3 +54,4 @@ https://youtu.be/pDlHvPBiERk
 ## Fontes
 
 __Simulação de compartilhamento de recursos em uma comunidade heterogênea:__ <https://www.youtube.com/watch?v=YNMkADpvO4w&t=685s&ab_channel=Primer>
+__Exemplo de Party JADE__: <https://jade.tilab.com/documentation/examples/party/>
