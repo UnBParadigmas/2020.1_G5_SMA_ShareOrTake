@@ -2,14 +2,18 @@ package graphics;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.Toolkit;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 import generic.board.item.BoardItemGroup;
+import simulation.creatures.SpecyState;
 import simulation.environment.EnvironmentAgent;
+import simulation.resources.Food;
 
 /**
  * Janela principal do programa
@@ -47,8 +51,12 @@ public class MainWindow extends JFrame {
 		this.envBoard.clearBoard();
 	}
 
-	public void insertElementsGroup(BoardItemGroup elementGroup) {
-		this.envBoard.insertElementsGroup(elementGroup);
+	public void insertFood(List<Food> foodItems, Image foodImage) {
+		this.envBoard.insertFood(foodItems, foodImage);
+	}
+	
+	public void insertSpecies(List<SpecyState> species) {
+		this.envBoard.insertSpecies(species);
 	}
 
 	private void buildWindow() {
@@ -112,9 +120,11 @@ public class MainWindow extends JFrame {
 		int width = this.contentPane.getSize().width;
 		int height = this.contentPane.getSize().height;
 		int boardSize = Math.min(width - menuWidth, height);
+		
 
 		if (envBoard != null) {
 			envBoard.setBounds(0, 0, boardSize, boardSize);
+			envBoard.repaint();
 		}
 
 		if (controllerMenu != null)

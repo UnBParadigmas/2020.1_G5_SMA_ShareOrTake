@@ -130,7 +130,6 @@ public class CreatureAgent extends Agent {
 	private void seekFood() {
 		ACLMessage seekFoodMsg = new ACLMessage(ACLMessage.REQUEST);
 		
-		System.out.println(getLocalName() +  " foi procurar comida");
 		seekFoodMsg.setContent(EnvironmentAgent.FOOD_SEEK);
 		seekFoodMsg.addReceiver(new AID("environment", AID.ISLOCALNAME));
 		send(seekFoodMsg);

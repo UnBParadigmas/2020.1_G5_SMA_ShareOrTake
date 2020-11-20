@@ -1,11 +1,13 @@
 package simulation.environment;
 
+import java.awt.Image;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import generic.board.item.BoardItemGroup;
+import javax.imageio.ImageIO;
+
 import graphics.MainWindow;
 import jade.core.AID;
 import jade.core.Agent;
@@ -215,27 +217,30 @@ public class EnvironmentAgent extends Agent {
 	}
 
 	private void setUpFood(int foodAmount) {
-		BoardItemGroup foodGroup;
-
 		this.foodResources = new ArrayList<>();
 
 		Food.createFoodResources(this.foodResources, foodAmount, 0, boardSize - 1);
-		foodGroup = new BoardItemGroup(this.foodResources, "/food.png");
 
-		mainWindow.insertElementsGroup(foodGroup);
+		mainWindow.insertFood(foodResources, getImage("/food.png"));
+	}
+	
+	private Image getImage(String path) {
+		try {
+			return ImageIO.read(getClass().getResource(path));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	private void setUpCreaturesAgents(List<SpecyState> species, int creaturesPerSpecy) {
-		BoardItemGroup creaturesGroup;
-
 		// Especies Adicionadas
-		speciesState = species;
+		this.speciesState = species;
 
 		for (int i = 0; i < this.speciesState.size(); i++) {
 			createCreatureAgents(this.speciesState, i, creaturesPerSpecy, 0, boardSize - 1);
-			creaturesGroup = new BoardItemGroup(this.speciesState.get(i).getCreaturesState(),
-					this.speciesState.get(i).getImagePath());
-			mainWindow.insertElementsGroup(creaturesGroup);
+			
+			mainWindow.insertSpecies(this.speciesState);
 			this.totalIterations += 1;
 		}
 	}

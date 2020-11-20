@@ -6,12 +6,16 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JPanel;
+
 import generic.board.item.BoardItemGroup;
+import simulation.creatures.SpecyState;
+import simulation.resources.Food;
 
 /**
  * Quadro de visualizacao do meio ambiente
  */
-public class EnvironmentBoard extends Canvas {
+public class EnvironmentBoard extends JPanel {
 	private static final long serialVersionUID = -2564620559534701364L;
 
 	private static final int GRID_LINE_THICKNESS = 1;
@@ -20,24 +24,35 @@ public class EnvironmentBoard extends Canvas {
 	private int boardSize;
 	private int elementSize;
 
-	private List<BoardItemGroup> elementsGroups = new ArrayList<>();
+	private Image foodImage = null;
+	private List<Food> foodItems = new ArrayList<>();
+	private List<SpecyState> specyItems = new ArrayList<>();
 
 	public EnvironmentBoard(int boardSize) {
 		this.boardSize = boardSize;
 	}
 
 	@Override
-	public void paint(Graphics g) {
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
 		this.drawGrid(g);
-		this.drawElementsGroups(g);
+		this.drawSpecies(g);
+		this.drawFood(g);
 	}
 	
 	public void clearBoard() {
-		this.elementsGroups.clear();
+		this.specyItems.clear();
+		this.foodItems.clear();
 	}
 
-	public void insertElementsGroup(BoardItemGroup elementGroup) {
-		this.elementsGroups.add(elementGroup);
+	public void insertFood(List<Food> food, Image foodImage) {
+		this.foodItems = food;
+		this.foodImage = foodImage;
+		this.repaint();
+	}
+	
+	public void insertSpecies(List<SpecyState> species) {
+		this.specyItems = species;
 		this.repaint();
 	}
 	
@@ -58,20 +73,29 @@ public class EnvironmentBoard extends Canvas {
 		}
 	}
 
-	private void drawElementsGroups(Graphics g) {
-		for (int i = 0; i < this.elementsGroups.size(); i++) {
-			Image groupImage = this.resizeImage(elementsGroups.get(i).getGroupImage(), elementSize - GRID_LINE_THICKNESS,
+	private void drawSpecies(Graphics g) {
+		for (int i = 0; i < this.specyItems.size(); i++) {
+			Image groupImage = this.resizeImage(specyItems.get(i).getGroupImage(), elementSize - GRID_LINE_THICKNESS,
 					elementSize - GRID_LINE_THICKNESS);
-			this.drawElements(g, elementsGroups.get(i), groupImage);
+			
+			for (int j = 0; j < this.specyItems.get(i).getCreaturesState().size(); j++) {
+				this.drawElement(g, groupImage, this.specyItems.get(i).getCreaturesState().get(j).getXPos(),
+						this.specyItems.get(i).getCreaturesState().get(j).getYPos());
+			}
+		}
+	}
+	
+	private void drawFood(Graphics g) {
+		if (foodImage != null) {			
+			Image groupImage = this.resizeImage(foodImage, elementSize - GRID_LINE_THICKNESS,
+					elementSize - GRID_LINE_THICKNESS);
+			for (int i = 0; i < this.foodItems.size(); i++) {
+				this.drawElement(g, groupImage, this.foodItems.get(i).getXPos(),
+						this.foodItems.get(i).getYPos());
+			}
 		}
 	}
 
-	private void drawElements(Graphics g, BoardItemGroup elementsGroup, Image groupImage) {
-		for (int j = 0; j < elementsGroup.getBoardItems().size(); j++) {
-			this.drawElement(g, groupImage, elementsGroup.getBoardItems().get(j).getXPos(),
-					elementsGroup.getBoardItems().get(j).getYPos());
-		}
-	}
 
 	private void drawElement(Graphics g, Image groupImage, int xPos, int yPos) {
 		g.drawImage(groupImage, getWindowPos(elementSize, xPos) + GRID_LINE_THICKNESS,
