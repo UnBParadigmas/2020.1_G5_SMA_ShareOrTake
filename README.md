@@ -17,7 +17,8 @@ Esse projeto consiste em uma simulação simples para demonstrar a aplicabilidad
 
 ## Screenshots
 
-Adicione 2 ou mais screenshots do projeto em termos de interface e/ou funcionamento.
+![](resources/screen1.png)
+![](resources/screen2.png)
 
 ## Instalação
 
@@ -29,11 +30,26 @@ Insira um manual ou um script para auxiliar ainda mais.
 
 ## Uso
 
-Explique como usar seu projeto, caso haja algum passo a passo após o comando de execução.
+Certifique-se que tenha JRE 11, Eclipse ou um IDE Java equivalente, JADE e JFrame instalados.
+![](resources/screen3.png)
+Defina a classe principal como jade.Boot.
+
+![](resources/screen4.png)
+Adicione o argumento
+~~~
+-gui environment:simulation.environment.EnvironmentAgent
+~~~
+
+Certifique-se de que JRE 11 esteja selecionado para o projeto.
+![](resources/screen5.png)
+
+Configure a simulação como desejar, e clique em iniciar!
+![](resources/screen6.png)
+
 
 ## Vídeo
 
-Adicione 1 ou mais vídeos com a execução do projeto.
+https://youtu.be/pDlHvPBiERk
 
 ## Fontes
 
